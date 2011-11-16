@@ -39,4 +39,4 @@ Indeed you could. I prefer a minimal focused tool whose operation is fixed, its 
 
 ### Portablity
 
-Stressdrive should be easily portable to other Unixes if anyone what to do that and toss me a Pull Request.
+Stressdrive should be easily portable to other Unixes if anyone wants to do that and toss me a Pull Request.
