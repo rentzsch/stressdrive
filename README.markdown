@@ -31,6 +31,8 @@ Some SSD's de-duplicate stored blocks. For these "filling" it with zeros if actu
 
 `stressdrive` only overwrites the drive with data once (so it's 7x faster) and then verifies all the data is correctly read back (which Disk Utility doesn't do at all).
 
+Jens Ayton [informs me](https://twitter.com/ahruman/status/136930141568905217) 7-Pass Erase uses fixed patterns, so de-duping may be an issue there as well.
+
 ### "Pshaw! I could do this with `dd`, `/dev/random` and `shasum`!"
 
 Indeed you could. I prefer a minimal focused tool whose operation is fixed, its source simple+readable and offers good built-in progress reporting.
