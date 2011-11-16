@@ -1,10 +1,10 @@
 ### About
 
-`stressdrive` is a Mac OS X command-line tool meant to verify correct operation of a drive. It does so by filling a drive up with random data and ensuring all the data can be correctly read back.
+Stressdrive is a Mac OS X command-line tool meant to verify correct operation of a drive. It does so by filling a drive up with random data and ensuring all the data can be correctly read back.
 
 It was written to verify correct operation of [de-duping SSDs](http://storagemojo.com/2011/06/27/de-dup-too-much-of-good-thing/), but it be used with normal HDDs or any rewritable block storage device.
 
-**DANGER:** `stressdrive` will overwrite, without warning, all data on the given drive. Be sure to double-check the drive you're aiming it at (Disk Utility.app > Select Drive > Info > Disk Identifier).
+**DANGER:** stressdrive will overwrite, without warning, all data on the given drive. Be sure to double-check the drive you're aiming it at (Disk Utility.app > Select Drive > Info > Disk Identifier).
 
 ### Usage
 
@@ -29,14 +29,14 @@ Some SSD's de-duplicate stored blocks. For these "filling" it with zeros if actu
 
 ### "How is this better than Disk Utility's '7-Pass Erase'?"
 
-`stressdrive` only overwrites the drive with data once (so it's 7x faster) and then verifies all the data is correctly read back (which Disk Utility doesn't do at all).
+Stressdrive only overwrites the drive with data once (so it's 7x faster) and then verifies all the data is correctly read back (which Disk Utility doesn't do at all).
 
 Jens Ayton [informs me](https://twitter.com/ahruman/status/136930141568905217) 7-Pass Erase uses fixed patterns, so de-duping may be an issue there as well.
 
-### "Pshaw! I could do this with `dd`, `/dev/random` and `shasum`!"
+### "Pshaw! I could do this with dd, /dev/random & shasum!"
 
 Indeed you could. I prefer a minimal focused tool whose operation is fixed, its source simple+readable and offers good built-in progress reporting.
 
 ### Portablity
 
-`stressdrive` should be easily portable to other Unixes if anyone what to do that and toss me a Pull Request.
+Stressdrive should be easily portable to other Unixes if anyone what to do that and toss me a Pull Request.
