@@ -1,4 +1,4 @@
-// stressdrive.c 1.0
+// stressdrive.c 1.1
 //   Copyright (c) 2011 Jonathan 'Wolf' Rentzsch: http://rentzsch.com
 //   Some rights reserved: http://opensource.org/licenses/MIT
 //   https://github.com/rentzsch/stressdrive
