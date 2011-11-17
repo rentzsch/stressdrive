@@ -1,4 +1,4 @@
-// stressdrive.c 1.0
+// stressdrive.c 1.1
 //   Copyright (c) 2011 Jonathan 'Wolf' Rentzsch: http://rentzsch.com
 //   Some rights reserved: http://opensource.org/licenses/MIT
 //   https://github.com/rentzsch/stressdrive
@@ -42,6 +42,22 @@ int main(int argc, const char *argv[]) {
         exit(EXIT_FAILURE);
     }
     printf("blockCount: %llu\n", blockCount);
+    
+    // For efficiency figure out the max blockSize that still fits in evenly into the
+    // drive's capacity:
+    uint8_t speedScale = 2;
+    while ((blockCount % (uint64_t)speedScale) == 0) {
+        speedScale *= 2;
+    }
+    speedScale /= 2;
+    printf("speedScale: %ux\n", speedScale);
+    
+    blockSize *= speedScale;
+    printf("scaled blockSize: %u\n", blockSize);
+    
+    blockCount /= speedScale;
+    printf("scaled blockCount: %llu\n", blockCount);
+    
     
     SHA_CTX shaContext;
     struct timeval start;
