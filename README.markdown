@@ -12,16 +12,21 @@ It was written to verify correct operation of [de-duping SSDs](http://storagemoj
 
 ### Sample Run
 
-	$ sudo ./stressdrive /dev/rdisk1
+	$ sudo ./stressdrive /dev/rdisk9
 	blockSize: 512
-	blockCount: 512000
-	writing random data to /dev/rdisk1
-	writing 100% (block 511360 of 512000)
-	2eed7209b7a5b9a1a22cd4eb1b77a59da23c1d56 <= SHA-1 of written data
+	blockCount: 468862128
+	speedScale: 16x
+	scaled blockSize: 8192
+	scaled blockCount: 29303883
+	writing random data to /dev/rdisk0
+	writing 100% (block 29303002 of 29303883)
+	1779f30a231c1d07c578b0e4ee49fde159210d95 <= SHA-1 of written data
 	verifying written data
-	reading 100% (block 510323 of 512000)
-	2eed7209b7a5b9a1a22cd4eb1b77a59da23c1d56 <= SHA-1 of read data
+	reading 100% (block 29302306 of 29303883)
+	1779f30a231c1d07c578b0e4ee49fde159210d95 <= SHA-1 of read data
 	SUCCESS
+
+That run took about 10 hours on a 240GB SSD.
 
 ### "How is this better than Disk Utility's 'Zero Out Data'?"
 
