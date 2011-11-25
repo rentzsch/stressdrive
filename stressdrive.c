@@ -45,13 +45,14 @@ int main(int argc, const char *argv[]) {
     
     // For efficiency figure out the max blockSize that still fits in evenly into the
     // drive's capacity:
-	uint16_t speedScale = 2;
-	while ((blockCount % (uint64_t)speedScale) == 0) {
+    uint16_t speedScale = 2;
+    while ((blockCount % (uint64_t)speedScale) == 0) {
         speedScale *= 2;
-		if (speedScale == 32768)
-			break;
+        if (speedScale == 32768) {
+            break;
+        }
     }
-	speedScale /= 2;
+    speedScale /= 2;
     printf("speedScale: %ux\n", speedScale);
     
     blockSize *= speedScale;
