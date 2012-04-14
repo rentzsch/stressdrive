@@ -8,7 +8,7 @@ It was written to verify correct operation of [de-duping SSDs](http://storagemoj
 
 ### Usage
 
-	sudo ./stressdrive /dev/rdrive1
+	sudo ./stressdrive /dev/rdisk1
 
 ### Sample Run
 
