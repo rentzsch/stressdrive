@@ -99,7 +99,7 @@ int main(int argc, const char *argv[]) {
     for (int shaByteIndex = 0; shaByteIndex < SHA_DIGEST_LENGTH; shaByteIndex++) {
         printf("%02x", writtenShaDigest[shaByteIndex]);
     }
-    printf(" <= SHA-1 of written data\n", drivePath);
+    printf(" <= SHA-1 of written data\n");
 
     if (lseek(fd, 0LL, SEEK_SET) != 0LL) {
         perror("lseek() failed");
@@ -134,7 +134,7 @@ int main(int argc, const char *argv[]) {
     for (int shaByteIndex = 0; shaByteIndex < SHA_DIGEST_LENGTH; shaByteIndex++) {
         printf("%02x", readShaDigest[shaByteIndex]);
     }
-    printf(" <= SHA-1 of read data\n", drivePath);
+    printf(" <= SHA-1 of read data\n");
 
     if (bcmp(writtenShaDigest, readShaDigest, SHA_DIGEST_LENGTH) == 0) {
         printf("SUCCESS\n");
