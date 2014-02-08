@@ -22,6 +22,55 @@
 
 #define EXIT_CALL_FAILED 2
 
+typedef struct {
+  uint64_t total;
+  const char *name;
+  struct timeval start, last_display;
+} PROGRESS_CTX;
+
+void PROGRESS_Init(PROGRESS_CTX *ctx, uint64_t total, const char *name) {
+  ctx->total = total;
+  ctx->name = name;
+  gettimeofday(&ctx->start, NULL);
+  ctx->last_display = (struct timeval){0};
+}
+
+void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current) {
+  double complete = (double)current / (double)ctx->total;
+  printf("\r%s %.1f%% (%lld of %lld)", ctx->name, complete * 100.0, current,
+         ctx->total);
+
+  uint64_t elapsed = now->tv_sec - ctx->start.tv_sec;
+  printf(" %02llu:%02llu:%02llu", elapsed / 3600, (elapsed / 60) % 60,
+         elapsed % 60);
+
+  if (current != ctx->total && elapsed > 10 && complete > 0.001) {
+    uint64_t eta = (1 / complete - 1) * elapsed;
+    printf(" (ETA: %02llu:%02llu:%02llu)", eta / 3600, (eta / 60) % 60,
+           eta % 60);
+  }
+
+  printf("\e[K");
+  fflush(stdout);
+}
+
+void PROGRESS_Update(PROGRESS_CTX *ctx, uint64_t current) {
+  struct timeval now, delta;
+  gettimeofday(&now, NULL);
+  timersub(&now, &ctx->last_display, &delta);
+  if (delta.tv_sec < 1)
+    return;
+  ctx->last_display = now;
+  _PROGRESS_Print(ctx, &now, current);
+}
+
+void PROGRESS_Finish(PROGRESS_CTX *ctx) {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  _PROGRESS_Print(ctx, &now, ctx->total);
+  printf("\n");
+}
+
 void SHA1_Finish(unsigned char *digest, SHA_CTX *ctx, const char *name) {
   SHA1_Final(digest, ctx);
   for (size_t i = 0; i < SHA_DIGEST_LENGTH; i++) {
@@ -89,12 +138,12 @@ int main(int argc, const char *argv[]) {
 #endif
 
   SHA_CTX shaContext;
-  struct timeval start;
-  gettimeofday(&start, NULL);
+  PROGRESS_CTX progress;
   uint8_t *block = malloc(blockSize);
 
   printf("writing random data to %s\n", drivePath);
   SHA1_Init(&shaContext);
+  PROGRESS_Init(&progress, blockCount, "writing");
   for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex++) {
     int err = RAND_pseudo_bytes(block, blockSize);
     assert(err == 0 || err == 1);
@@ -104,21 +153,10 @@ int main(int argc, const char *argv[]) {
       perror("write() failed");
       exit(EXIT_CALL_FAILED);
     }
-
     SHA1_Update(&shaContext, block, blockSize);
-
-    struct timeval now, delta;
-    gettimeofday(&now, NULL);
-    timersub(&now, &start, &delta);
-    if (delta.tv_sec >= 1) {
-      gettimeofday(&start, NULL);
-      printf("\rwriting %.0f%% (block %lld of %lld)",
-             ((double)blockIndex / (double)blockCount) * 100.0, blockIndex,
-             blockCount);
-      fflush(stdout);
-    }
+    PROGRESS_Update(&progress, blockIndex);
   }
-  printf("\n");
+  PROGRESS_Finish(&progress);
 
   uint8_t writtenShaDigest[SHA_DIGEST_LENGTH];
   SHA1_Finish(writtenShaDigest, &shaContext, "written");
@@ -130,25 +168,16 @@ int main(int argc, const char *argv[]) {
 
   printf("verifying written data\n");
   SHA1_Init(&shaContext);
+  PROGRESS_Init(&progress, blockCount, "reading");
   for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex++) {
     if (read(fd, block, blockSize) == -1) {
       perror("read() failed");
       exit(EXIT_CALL_FAILED);
     }
     SHA1_Update(&shaContext, block, blockSize);
-
-    struct timeval now, delta;
-    gettimeofday(&now, NULL);
-    timersub(&now, &start, &delta);
-    if (delta.tv_sec >= 1) {
-      gettimeofday(&start, NULL);
-      printf("\rreading %.0f%% (block %lld of %lld)",
-             ((double)blockIndex / (double)blockCount) * 100.0, blockIndex,
-             blockCount);
-      fflush(stdout);
-    }
+    PROGRESS_Update(&progress, blockIndex);
   }
-  printf("\n");
+  PROGRESS_Finish(&progress);
 
   uint8_t readShaDigest[SHA_DIGEST_LENGTH];
   SHA1_Finish(readShaDigest, &shaContext, "read");
