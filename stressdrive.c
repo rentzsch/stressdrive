@@ -22,6 +22,20 @@
 
 #define EXIT_CALL_FAILED 2
 
+#define MAX(a, b)                                                              \
+  ({                                                                           \
+    __typeof__(a) _a = (a);                                                    \
+    __typeof__(b) _b = (b);                                                    \
+    _a > _b ? _a : _b;                                                         \
+  })
+
+#define MIN(a, b)                                                              \
+  ({                                                                           \
+    __typeof__(a) _a = (a);                                                    \
+    __typeof__(b) _b = (b);                                                    \
+    _a < _b ? _a : _b;                                                         \
+  })
+
 typedef struct {
   uint64_t total;
   const char *name;
@@ -97,33 +111,25 @@ int main(int argc, const char *argv[]) {
     perror("ioctl(DKIOCGETBLOCKSIZE) failed");
     exit(EXIT_CALL_FAILED);
   }
-  printf("blockSize: %d\n", blockSize);
+  printf("disk block size: %u\n", blockSize);
 
   uint64_t blockCount;
   if (ioctl(fd, DKIOCGETBLOCKCOUNT, &blockCount) == -1) {
     perror("ioctl(DKIOCGETBLOCKCOUNT) failed");
     exit(EXIT_CALL_FAILED);
   }
-  printf("blockCount: %llu\n", blockCount);
+  printf("disk block count: %llu\n", blockCount);
 
-  // For efficiency figure out the max blockSize that still fits in evenly into
-  // the
-  // drive's capacity:
-  uint16_t speedScale = 2;
-  while ((blockCount % (uint64_t)speedScale) == 0) {
-    speedScale *= 2;
-    if (speedScale == 32768) {
-      break;
-    }
+  uint32_t bufferSize = MAX(blockSize, 8 * 1024 * 1024);
+  printf("buffer size: %u\n", bufferSize);
+
+  uint8_t *buffer = malloc(bufferSize);
+  if (buffer == NULL) {
+    perror("malloc() failed");
+    exit(EXIT_CALL_FAILED);
   }
-  speedScale /= 2;
-  printf("speedScale: %ux\n", speedScale);
 
-  blockSize *= speedScale;
-  printf("scaled blockSize: %u\n", blockSize);
-
-  blockCount /= speedScale;
-  printf("scaled blockCount: %llu\n", blockCount);
+  uint16_t bufferBlocks = bufferSize / blockSize;
 
 #ifdef __APPLE__
   IOPMAssertionID noIdleAssertionID;
@@ -139,21 +145,23 @@ int main(int argc, const char *argv[]) {
 
   SHA_CTX shaContext;
   PROGRESS_CTX progress;
-  uint8_t *block = malloc(blockSize);
 
   printf("writing random data to %s\n", drivePath);
   SHA1_Init(&shaContext);
   PROGRESS_Init(&progress, blockCount, "writing");
-  for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex++) {
-    int err = RAND_pseudo_bytes(block, blockSize);
+  for (uint64_t blockIndex = 0; blockIndex < blockCount;
+       blockIndex += bufferBlocks) {
+    uint32_t size = MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
+
+    int err = RAND_pseudo_bytes(buffer, size);
     assert(err == 0 || err == 1);
 
-    err = write(fd, block, blockSize);
-    if (err != blockSize) {
+    err = write(fd, buffer, size);
+    if (err != size) {
       perror("write() failed");
       exit(EXIT_CALL_FAILED);
     }
-    SHA1_Update(&shaContext, block, blockSize);
+    SHA1_Update(&shaContext, buffer, size);
     PROGRESS_Update(&progress, blockIndex);
   }
   PROGRESS_Finish(&progress);
@@ -169,12 +177,15 @@ int main(int argc, const char *argv[]) {
   printf("verifying written data\n");
   SHA1_Init(&shaContext);
   PROGRESS_Init(&progress, blockCount, "reading");
-  for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex++) {
-    if (read(fd, block, blockSize) == -1) {
+  for (uint64_t blockIndex = 0; blockIndex < blockCount;
+       blockIndex += bufferBlocks) {
+    uint32_t size = MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
+
+    if (read(fd, buffer, size) == -1) {
       perror("read() failed");
       exit(EXIT_CALL_FAILED);
     }
-    SHA1_Update(&shaContext, block, blockSize);
+    SHA1_Update(&shaContext, buffer, size);
     PROGRESS_Update(&progress, blockIndex);
   }
   PROGRESS_Finish(&progress);
@@ -201,7 +212,7 @@ int main(int argc, const char *argv[]) {
   }
 #endif
 
-  free(block);
+  free(buffer);
   close(fd);
 
   return exitCode;
