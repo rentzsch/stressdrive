@@ -16,6 +16,10 @@
 #include <sys/disk.h>
 #include <strings.h>
 
+#ifdef __APPLE__
+#import <IOKit/pwr_mgt/IOPMLib.h>
+#endif
+
 int main(int argc, const char *argv[]) {
   if (argc != 2) {
     fprintf(stderr, "Usage: sudo %s /dev/rdisk6\n", argv[0]);
@@ -61,6 +65,18 @@ int main(int argc, const char *argv[]) {
 
   blockCount /= speedScale;
   printf("scaled blockCount: %llu\n", blockCount);
+
+#ifdef __APPLE__
+  IOPMAssertionID noIdleAssertionID;
+  IOReturn noIdleAssertionCreated = IOPMAssertionCreateWithName(
+      kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn,
+      CFSTR("stressdrive running"), &noIdleAssertionID);
+  if (kIOReturnSuccess == noIdleAssertionCreated) {
+    printf("succesfully created no idle assertion\n");
+  } else {
+    printf("failed to create no idle assertion\n");
+  }
+#endif
 
   SHA_CTX shaContext;
   struct timeval start;
@@ -140,6 +156,16 @@ int main(int argc, const char *argv[]) {
   } else {
     printf("FAILURE\n");
   }
+
+#ifdef __APPLE__
+  if (kIOReturnSuccess == noIdleAssertionCreated) {
+    if (kIOReturnSuccess == IOPMAssertionRelease(noIdleAssertionID)) {
+      printf("succesfully released no idle assertion\n");
+    } else {
+      printf("failed to release no idle assertion\n");
+    }
+  }
+#endif
 
   free(block);
 
