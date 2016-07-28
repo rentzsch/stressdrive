@@ -20,6 +20,8 @@
 #import <IOKit/pwr_mgt/IOPMLib.h>
 #endif
 
+#define EXIT_CALL_FAILED 2
+
 int main(int argc, const char *argv[]) {
   if (argc != 2) {
     fprintf(stderr, "Usage: sudo %s /dev/rdisk6\n", argv[0]);
@@ -30,20 +32,20 @@ int main(int argc, const char *argv[]) {
   int fd = open(drivePath, O_RDWR);
   if (fd == -1) {
     perror("open() failed");
-    exit(EXIT_FAILURE);
+    exit(EXIT_CALL_FAILED);
   }
 
   uint32_t blockSize;
   if (ioctl(fd, DKIOCGETBLOCKSIZE, &blockSize) == -1) {
     perror("ioctl(DKIOCGETBLOCKSIZE) failed");
-    exit(EXIT_FAILURE);
+    exit(EXIT_CALL_FAILED);
   }
   printf("blockSize: %d\n", blockSize);
 
   uint64_t blockCount;
   if (ioctl(fd, DKIOCGETBLOCKCOUNT, &blockCount) == -1) {
     perror("ioctl(DKIOCGETBLOCKCOUNT) failed");
-    exit(EXIT_FAILURE);
+    exit(EXIT_CALL_FAILED);
   }
   printf("blockCount: %llu\n", blockCount);
 
@@ -93,7 +95,7 @@ int main(int argc, const char *argv[]) {
     err = write(fd, block, blockSize);
     if (err != blockSize) {
       perror("write() failed");
-      exit(EXIT_FAILURE);
+      exit(EXIT_CALL_FAILED);
     }
 
     SHA1_Update(&shaContext, block, blockSize);
@@ -119,7 +121,7 @@ int main(int argc, const char *argv[]) {
 
   if (lseek(fd, 0LL, SEEK_SET) != 0LL) {
     perror("lseek() failed");
-    exit(EXIT_FAILURE);
+    exit(EXIT_CALL_FAILED);
   }
 
   printf("verifying written data\n");
@@ -128,7 +130,7 @@ int main(int argc, const char *argv[]) {
   for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex++) {
     if (read(fd, block, blockSize) == -1) {
       perror("read() failed");
-      exit(EXIT_FAILURE);
+      exit(EXIT_CALL_FAILED);
     }
     SHA1_Update(&shaContext, block, blockSize);
 
@@ -151,10 +153,13 @@ int main(int argc, const char *argv[]) {
   }
   printf(" <= SHA-1 of read data\n");
 
+  int exitCode;
   if (bcmp(writtenShaDigest, readShaDigest, SHA_DIGEST_LENGTH) == 0) {
     printf("SUCCESS\n");
+    exitCode = EXIT_SUCCESS;
   } else {
     printf("FAILURE\n");
+    exitCode = EXIT_FAILURE;
   }
 
 #ifdef __APPLE__
@@ -168,7 +173,7 @@ int main(int argc, const char *argv[]) {
 #endif
 
   free(block);
-
   close(fd);
-  return 0;
+
+  return exitCode;
 }
