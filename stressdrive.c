@@ -24,7 +24,7 @@
 
 int main(int argc, const char *argv[]) {
   if (argc != 2) {
-    fprintf(stderr, "Usage: sudo %s /dev/rdisk6\n", argv[0]);
+    fprintf(stderr, "Usage: sudo %s /dev/rdiskN\n", argv[0]);
     exit(EXIT_FAILURE);
   }
 

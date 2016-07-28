@@ -8,17 +8,17 @@ It was written to verify correct operation of [de-duping SSDs](http://storagemoj
 
 ### Usage
 
-	sudo ./stressdrive /dev/rdisk1
+	sudo ./stressdrive /dev/rdiskN
 
 ### Sample Run
 
-	$ sudo ./stressdrive /dev/rdisk9
+	$ sudo ./stressdrive /dev/rdisk123
 	blockSize: 512
 	blockCount: 468862128
 	speedScale: 16x
 	scaled blockSize: 8192
 	scaled blockCount: 29303883
-	writing random data to /dev/rdisk0
+	writing random data to /dev/rdisk123
 	writing 100% (block 29303002 of 29303883)
 	1779f30a231c1d07c578b0e4ee49fde159210d95 <= SHA-1 of written data
 	verifying written data
