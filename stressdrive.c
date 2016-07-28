@@ -143,18 +143,6 @@ int main(int argc, const char *argv[]) {
 
   free(block);
 
-  /*
-  This ends up kicking the entire device off the bus, which is too much:
-  if (ioctl(fd, DKIOCEJECT) == -1) {
-      perror("ioctl(DKIOCEJECT) failed");
-      exit(EXIT_FAILURE);
-  }
-  Instead, run `stressdrive foo; diskutil unmount /Volumes/bar` or disable
-  Disk Arbitration via
-  `sudo launchctl (unload|load)
-  /System/Library/LaunchDaemons/com.apple.diskarbitrationd.plist`
-  */
-
   close(fd);
   return 0;
 }
