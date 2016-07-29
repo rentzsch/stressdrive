@@ -22,6 +22,14 @@
 
 #define EXIT_CALL_FAILED 2
 
+void SHA1_Finish(unsigned char *digest, SHA_CTX *ctx, const char *name) {
+  SHA1_Final(digest, ctx);
+  for (size_t i = 0; i < SHA_DIGEST_LENGTH; i++) {
+    printf("%02x", digest[i]);
+  }
+  printf(" <= SHA-1 of %s data\n", name);
+}
+
 int main(int argc, const char *argv[]) {
   if (argc != 2) {
     fprintf(stderr, "Usage: sudo %s /dev/rdiskN\n", argv[0]);
@@ -87,7 +95,6 @@ int main(int argc, const char *argv[]) {
 
   printf("writing random data to %s\n", drivePath);
   SHA1_Init(&shaContext);
-  uint8_t writtenShaDigest[SHA_DIGEST_LENGTH];
   for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex++) {
     int err = RAND_pseudo_bytes(block, blockSize);
     assert(err == 0 || err == 1);
@@ -111,13 +118,10 @@ int main(int argc, const char *argv[]) {
       fflush(stdout);
     }
   }
-
   printf("\n");
-  SHA1_Final(writtenShaDigest, &shaContext);
-  for (int shaByteIndex = 0; shaByteIndex < SHA_DIGEST_LENGTH; shaByteIndex++) {
-    printf("%02x", writtenShaDigest[shaByteIndex]);
-  }
-  printf(" <= SHA-1 of written data\n");
+
+  uint8_t writtenShaDigest[SHA_DIGEST_LENGTH];
+  SHA1_Finish(writtenShaDigest, &shaContext, "written");
 
   if (lseek(fd, 0LL, SEEK_SET) != 0LL) {
     perror("lseek() failed");
@@ -126,7 +130,6 @@ int main(int argc, const char *argv[]) {
 
   printf("verifying written data\n");
   SHA1_Init(&shaContext);
-  uint8_t readShaDigest[SHA_DIGEST_LENGTH];
   for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex++) {
     if (read(fd, block, blockSize) == -1) {
       perror("read() failed");
@@ -145,13 +148,10 @@ int main(int argc, const char *argv[]) {
       fflush(stdout);
     }
   }
-
   printf("\n");
-  SHA1_Final(readShaDigest, &shaContext);
-  for (int shaByteIndex = 0; shaByteIndex < SHA_DIGEST_LENGTH; shaByteIndex++) {
-    printf("%02x", readShaDigest[shaByteIndex]);
-  }
-  printf(" <= SHA-1 of read data\n");
+
+  uint8_t readShaDigest[SHA_DIGEST_LENGTH];
+  SHA1_Finish(readShaDigest, &shaContext, "read");
 
   int exitCode;
   if (bcmp(writtenShaDigest, readShaDigest, SHA_DIGEST_LENGTH) == 0) {
