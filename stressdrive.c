@@ -3,20 +3,19 @@
 //   Some rights reserved: http://opensource.org/licenses/MIT
 //   https://github.com/rentzsch/stressdrive
 
-#include <stdio.h>
-#include <assert.h>
-#include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <stdint.h>
-#include <errno.h>
-#include <sys/time.h>
-#include <sys/disk.h>
+#include <stdio.h>
 #include <strings.h>
+#include <sys/disk.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 #ifdef __APPLE__
 #import <IOKit/pwr_mgt/IOPMLib.h>
