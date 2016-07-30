@@ -4,6 +4,7 @@
 //   https://github.com/rentzsch/stressdrive
 
 #include <fcntl.h>
+#include <inttypes.h>
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include <openssl/rand.h>
@@ -52,17 +53,17 @@ void PROGRESS_Init(PROGRESS_CTX *ctx, uint64_t total, const char *name) {
 
 void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current) {
   double complete = (double)current / (double)ctx->total;
-  printf("\r%s %.1f%% (%lld of %lld)", ctx->name, complete * 100.0, current,
-         ctx->total);
+  printf("\r%s %.1f%% (%" PRIu64 " of %" PRIu64 ")", ctx->name,
+         complete * 100.0, current, ctx->total);
 
   uint64_t elapsed = now->tv_sec - ctx->start.tv_sec;
-  printf(" %02llu:%02llu:%02llu", elapsed / 3600, (elapsed / 60) % 60,
-         elapsed % 60);
+  printf(" %02" PRIu64 ":%02" PRIu64 ":%02" PRIu64 "", elapsed / 3600,
+         (elapsed / 60) % 60, elapsed % 60);
 
   if (current != ctx->total && elapsed > 10 && complete > 0.001) {
     uint64_t eta = (1 / complete - 1) * elapsed;
-    printf(" (ETA: %02llu:%02llu:%02llu)", eta / 3600, (eta / 60) % 60,
-           eta % 60);
+    printf(" (ETA: %02" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")", eta / 3600,
+           (eta / 60) % 60, eta % 60);
   }
 
   printf("\e[K");
@@ -119,7 +120,7 @@ int main(int argc, const char *argv[]) {
     perror("ioctl(DKIOCGETBLOCKCOUNT) failed");
     exit(EXIT_CALL_FAILED);
   }
-  printf("disk block count: %llu\n", blockCount);
+  printf("disk block count: %" PRIu64 "\n", blockCount);
 
   uint32_t bufferSize = MAX(blockSize, 8 * 1024 * 1024);
   printf("buffer size: %u\n", bufferSize);
