@@ -8,6 +8,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <openssl/aes.h>
+#include <openssl/evp.h>
 #include <openssl/rand.h>
 #include <openssl/sha.h>
 #include <stdint.h>
@@ -146,6 +148,28 @@ int main(int argc, const char *argv[]) {
   SHA_CTX shaContext;
   PROGRESS_CTX progress;
 
+  int aesKeylength = 128;
+  unsigned char aesKey[aesKeylength / 8];
+  if (!RAND_bytes(aesKey, aesKeylength / 8)) {
+    fprintf(stderr, "RAND_bytes() failed\n");
+    exit(EXIT_CALL_FAILED);
+  }
+
+  unsigned char aesIv[AES_BLOCK_SIZE];
+  if (!RAND_bytes(aesIv, AES_BLOCK_SIZE)) {
+    fprintf(stderr, "RAND_bytes() failed\n");
+    exit(EXIT_CALL_FAILED);
+  }
+
+  EVP_CIPHER_CTX aes;
+  if (!EVP_EncryptInit(&aes, EVP_aes_128_cbc(), aesKey, aesIv)) {
+    fprintf(stderr, "EVP_EncryptInit() failed\n");
+    exit(EXIT_CALL_FAILED);
+  }
+
+  unsigned char *aesInput = malloc(bufferSize);
+  memset(aesInput, 0, bufferSize);
+
   printf("writing random data to %s\n", drivePath);
   SHA1_Init(&shaContext);
   PROGRESS_Init(&progress, blockCount, "writing");
@@ -153,11 +177,18 @@ int main(int argc, const char *argv[]) {
        blockIndex += bufferBlocks) {
     uint32_t size = MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
-    int err = RAND_pseudo_bytes(buffer, size);
-    assert(err == 0 || err == 1);
+    int outSize;
+    if (!EVP_EncryptUpdate(&aes, buffer, &outSize, aesInput, size)) {
+      fprintf(stderr, "EVP_EncryptUpdate() failed\n");
+      exit(EXIT_CALL_FAILED);
+    }
+    if (outSize != size) {
+      fprintf(stderr, "EVP_EncryptUpdate() returned %d instead of %u bytes\n",
+              outSize, size);
+      exit(EXIT_CALL_FAILED);
+    }
 
-    err = write(fd, buffer, size);
-    if (err != size) {
+    if (write(fd, buffer, size) != size) {
       perror("write() failed");
       exit(EXIT_CALL_FAILED);
     }
