@@ -1,10 +1,10 @@
 ### About
 
-Stressdrive is a Mac OS X command-line tool meant to verify correct operation of a drive. It does so by filling a drive up with random data and ensuring all the data can be correctly read back.
+`stressdrive` is a Mac OS X command-line tool meant to verify correct operation of a drive. It does so by filling a drive up with random data and ensuring all the data can be correctly read back.
 
 It was written to verify correct operation of [de-duping SSDs](http://storagemojo.com/2011/06/27/de-dup-too-much-of-good-thing/), but it can be used with normal HDDs or any rewritable block storage device.
 
-**DANGER:** stressdrive will overwrite, without warning, all data on the given drive. Be sure to double-check the drive you're aiming it at (Disk Utility.app > Select Drive > Info > Disk Identifier).
+**DANGER:** `stressdrive` will overwrite, without warning, all data on the given drive. Be sure to double-check the drive you're aiming it at (Disk Utility.app > Select Drive > Info > Disk Identifier).
 
 ### Usage
 
@@ -28,13 +28,21 @@ It was written to verify correct operation of [de-duping SSDs](http://storagemoj
 
 That run took about 10 hours on a 240GB SSD.
 
+### Run Only Against Entire, Unmounted, Physical Devices
+
+`stressdrive` should always be run against **entire unmounted physical devices**.
+
+Practically: your device path should always be in the form of `/dev/rdiskX` (not `/dev/rdiskXsX`). stressdrive's results can only be trusted if it was allowed to fill the entire device to the device's advertised information-theoretic maximum.
+
+Imagine pointing stressdrive at just a logical partition. If the drive failed during the test it's possible to get back a clean read of the random data just written, while a block outside the device's partition is no longer correct. That would not be an accurate test result.
+
 ### "How is this better than Disk Utility's 'Zero Out Data'?"
 
 Some SSD's de-duplicate stored blocks. For these "filling" it with zeros if actually just modifying one or two actual mapping blocks over and over again. It's not a real test of the SSD's hardware.
 
 ### "How is this better than Disk Utility's '7-Pass Erase'?"
 
-Stressdrive only overwrites the drive with data once (so it's 7x faster) and then verifies all the data is correctly read back (which Disk Utility doesn't do at all).
+`stressdrive` only overwrites the drive with data once (so it's 7x faster) and then verifies all the data is correctly read back (which Disk Utility doesn't do at all).
 
 Jens Ayton [informs me](https://twitter.com/ahruman/status/136930141568905217) 7-Pass Erase uses fixed patterns, so de-duping may be an issue there as well.
 
@@ -44,4 +52,4 @@ Indeed you could. I prefer a minimal focused tool whose operation is fixed, its 
 
 ### Portablity
 
-Stressdrive should be easily portable to other Unixes if anyone wants to do that and toss me a Pull Request.
+`stressdrive` should be easily portable to other Unixes if anyone wants to do that and toss me a Pull Request.
