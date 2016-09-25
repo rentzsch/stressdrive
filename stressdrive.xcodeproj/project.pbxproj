@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		79287FB614742CB200D6FC82 /* libcrypto.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 79287FB514742CB200D6FC82 /* libcrypto.dylib */; };
+		79CBD20A1D98531900B3C190 /* libcrypto.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 79CBD2091D98531900B3C190 /* libcrypto.a */; };
 		8DD76FAC0486AB0100D96B5E /* stressdrive.c in Sources */ = {isa = PBXBuildFile; fileRef = 08FB7796FE84155DC02AAC07 /* stressdrive.c */; settings = {ATTRIBUTES = (); }; };
 		B2250B1318A79A8C0037C038 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2250B1218A79A8C0037C038 /* CoreFoundation.framework */; };
 		B2250B1518A79A910037C038 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B2250B1418A79A910037C038 /* IOKit.framework */; };
@@ -15,7 +15,7 @@
 
 /* Begin PBXFileReference section */
 		08FB7796FE84155DC02AAC07 /* stressdrive.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = stressdrive.c; sourceTree = "<group>"; };
-		79287FB514742CB200D6FC82 /* libcrypto.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcrypto.dylib; path = usr/lib/libcrypto.dylib; sourceTree = SDKROOT; };
+		79CBD2091D98531900B3C190 /* libcrypto.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libcrypto.a; path = /usr/local/Cellar/openssl/1.0.2i/lib/libcrypto.a; sourceTree = "<absolute>"; };
 		8DD76FB20486AB0100D96B5E /* stressdrive */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = stressdrive; sourceTree = BUILT_PRODUCTS_DIR; };
 		B2250B1218A79A8C0037C038 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		B2250B1418A79A910037C038 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
@@ -28,7 +28,7 @@
 			files = (
 				B2250B1518A79A910037C038 /* IOKit.framework in Frameworks */,
 				B2250B1318A79A8C0037C038 /* CoreFoundation.framework in Frameworks */,
-				79287FB614742CB200D6FC82 /* libcrypto.dylib in Frameworks */,
+				79CBD20A1D98531900B3C190 /* libcrypto.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -38,10 +38,10 @@
 		08FB7794FE84155DC02AAC07 /* stressdrive */ = {
 			isa = PBXGroup;
 			children = (
+				08FB7796FE84155DC02AAC07 /* stressdrive.c */,
+				79CBD2091D98531900B3C190 /* libcrypto.a */,
 				B2250B1418A79A910037C038 /* IOKit.framework */,
 				B2250B1218A79A8C0037C038 /* CoreFoundation.framework */,
-				08FB7796FE84155DC02AAC07 /* stressdrive.c */,
-				79287FB514742CB200D6FC82 /* libcrypto.dylib */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
 			);
 			name = stressdrive;
@@ -81,7 +81,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0500;
+				LastUpgradeCheck = 0730;
 			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "stressdrive" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -124,6 +124,11 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				INSTALL_PATH = /usr/local/bin;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					/usr/local/Cellar/openssl/1.0.2i/lib,
+				);
 				PRODUCT_NAME = stressdrive;
 			};
 			name = Debug;
@@ -135,6 +140,11 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				INSTALL_PATH = /usr/local/bin;
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					/usr/local/Cellar/openssl/1.0.2i/lib,
+				);
 				PRODUCT_NAME = stressdrive;
 			};
 			name = Release;
@@ -142,14 +152,15 @@
 		1DEB928A08733DD80010E9CD /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LIBRARY_SEARCH_PATHS = /opt/local/lib;
+				HEADER_SEARCH_PATHS = /usr/local/opt/openssl/include;
 				ONLY_ACTIVE_ARCH = YES;
 				PREBINDING = NO;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 			};
 			name = Debug;
 		};
@@ -159,9 +170,9 @@
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				LIBRARY_SEARCH_PATHS = /opt/local/lib;
+				HEADER_SEARCH_PATHS = /usr/local/opt/openssl/include;
 				PREBINDING = NO;
-				SDKROOT = macosx10.8;
+				SDKROOT = macosx;
 			};
 			name = Release;
 		};
