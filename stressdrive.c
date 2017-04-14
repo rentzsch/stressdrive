@@ -3,6 +3,8 @@
 //   Some rights reserved: http://opensource.org/licenses/MIT
 //   https://github.com/rentzsch/stressdrive
 
+#define _BSD_SOURCE
+
 #include <fcntl.h>
 #include <inttypes.h>
 #include <openssl/aes.h>
@@ -11,15 +13,20 @@
 #include <openssl/sha.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <strings.h>
-#include <sys/disk.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <unistd.h>
 
 #ifdef __APPLE__
+#include <sys/disk.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
+#endif
+
+#ifdef __linux__
+#include <linux/fs.h>
 #endif
 
 #define EXIT_CALL_FAILED 2
@@ -97,7 +104,11 @@ void SHA1_Finish(unsigned char *digest, SHA_CTX *ctx, const char *name) {
 
 int main(int argc, const char *argv[]) {
     if (argc != 2) {
+#ifdef __APPLE__
         fprintf(stderr, "Usage: sudo %s /dev/rdiskN\n", argv[0]);
+#else
+        fprintf(stderr, "Usage: sudo %s /dev/sdX\n", argv[0]);
+#endif
         exit(EXIT_FAILURE);
     }
 
@@ -109,15 +120,25 @@ int main(int argc, const char *argv[]) {
     }
 
     uint32_t blockSize;
+#ifdef DKIOCGETBLOCKSIZE
     if (ioctl(fd, DKIOCGETBLOCKSIZE, &blockSize) == -1) {
-        perror("ioctl(DKIOCGETBLOCKSIZE) failed");
+#else
+    if (ioctl(fd, BLKSSZGET, &blockSize) == -1) {
+#endif
+        perror("getting block size using ioctl failed");
         exit(EXIT_CALL_FAILED);
     }
     printf("disk block size: %u\n", blockSize);
 
     uint64_t blockCount;
+#ifdef DKIOCGETBLOCKCOUNT
     if (ioctl(fd, DKIOCGETBLOCKCOUNT, &blockCount) == -1) {
-        perror("ioctl(DKIOCGETBLOCKCOUNT) failed");
+#else
+    if (ioctl(fd, BLKGETSIZE64, &blockCount) != -1) {
+        blockCount /= blockSize;
+    } else {
+#endif
+        perror("getting block count using ioctl failed");
         exit(EXIT_CALL_FAILED);
     }
     printf("disk block count: %" PRIu64 "\n", blockCount);
