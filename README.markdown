@@ -6,6 +6,26 @@ It was written to verify correct operation of [de-duping SSDs](http://storagemoj
 
 **DANGER:** `stressdrive` will overwrite, without warning, all data on the given drive. Be sure to double-check the drive you're aiming it at (Disk Utility.app > Select Drive > Info > Disk Identifier).
 
+### Building
+
+#### Mac OS X
+
+	xcodebuild
+
+or (you can use `cc` or `clang` instead of gcc):
+
+	gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices
+
+openssl bundled with os will produce lots of deprecation warnings, so you can use different openssl:
+
+	gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices -I/PREFIX/include -L/PREFIX/lib
+
+#### Ubuntu
+
+	sudo apt-get install libssl-dev # You will need openssl headers
+
+	gcc stressdrive.c -o stressdrive -std=c99 -lcrypto
+
 ### Usage
 
 	sudo ./stressdrive /dev/rdiskN

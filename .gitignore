@@ -8,3 +8,5 @@ build/
 *.perspectivev3
 project.xcworkspace/
 xcuserdata/
+
+/stressdrive
