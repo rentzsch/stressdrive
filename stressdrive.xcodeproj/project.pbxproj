@@ -129,6 +129,7 @@
 					"$(PROJECT_DIR)",
 					/usr/local/Cellar/openssl/1.0.2k/lib,
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_NAME = stressdrive;
 			};
 			name = Debug;
@@ -145,6 +146,7 @@
 					"$(PROJECT_DIR)",
 					/usr/local/Cellar/openssl/1.0.2k/lib,
 				);
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				PRODUCT_NAME = stressdrive;
 			};
 			name = Release;
