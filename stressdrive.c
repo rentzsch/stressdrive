@@ -195,9 +195,8 @@ int main(int argc, const char *argv[]) {
     printf("writing random data to %s\n", drivePath);
     SHA1_Init(&shaContext);
     PROGRESS_Init(&progress, blockCount, "writing");
-    for (uint64_t blockIndex = 0; blockIndex < blockCount;
-         blockIndex += bufferBlocks) {
-        uint32_t size = MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
+    for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex += bufferBlocks) {
+        uint32_t size = (uint32_t) MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
         int outSize;
         if (!EVP_EncryptUpdate(&aes, buffer, &outSize, aesInput, size)) {
@@ -231,9 +230,8 @@ int main(int argc, const char *argv[]) {
     printf("verifying written data\n");
     SHA1_Init(&shaContext);
     PROGRESS_Init(&progress, blockCount, "reading");
-    for (uint64_t blockIndex = 0; blockIndex < blockCount;
-         blockIndex += bufferBlocks) {
-        uint32_t size = MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
+    for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex += bufferBlocks) {
+        uint32_t size = (uint32_t) MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
         if (read(fd, buffer, size) == -1) {
             perror("read() failed");
