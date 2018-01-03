@@ -77,7 +77,7 @@ Indeed you could. I prefer a minimal focused tool whose operation is fixed, its 
 
 ## Version History
 
-### v1.2: 2018-01-03 [download](https://github.com/rentzsch/stressdrive/archive/stressdrive-mac-1.1.zip)
+### v1.2: 2018-01-03 [download](https://github.com/rentzsch/stressdrive/archive/stressdrive-mac-1.2.zip)
 
 - [NEW] Linux support. ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/8))
 - [NEW] Better progress display: elapsed time and ETA. ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/8))
