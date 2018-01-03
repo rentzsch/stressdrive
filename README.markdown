@@ -1,52 +1,14 @@
-### About
+## About
 
-`stressdrive` is a linux and Mac OS X command-line tool meant to verify correct operation of a drive. It does so by filling a drive up with random data and ensuring all the data can be correctly read back.
+`stressdrive` is a macOS and Linux command-line tool meant to verify correct operation of a drive. It does so by filling a drive up with random data and ensuring all the data can be correctly read back.
 
 It was written to verify correct operation of [de-duping SSDs](http://storagemojo.com/2011/06/27/de-dup-too-much-of-good-thing/), but it can be used with normal HDDs or any rewritable block storage device.
 
-**DANGER:** `stressdrive` will overwrite, without warning, all data on the given drive. Be sure to double-check the drive you're aiming it at (Disk Utility.app > Select Drive > Info > Disk Identifier).
+**DANGER:** `stressdrive` will overwrite, without warning, all data on the given drive. Be sure to double-check the drive you're aiming it at (`diskutil list` or Disk Utility.app > Select Drive > Info > Disk Identifier).
 
-### Building
-
-#### Mac OS X
-
-	xcodebuild
-
-or (you can use `cc` or `clang` instead of gcc):
-
-	gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices
-
-openssl bundled with os will produce lots of deprecation warnings, so you can use different openssl:
-
-	gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices -I/PREFIX/include -L/PREFIX/lib
-
-#### Ubuntu
-
-	sudo apt-get install libssl-dev # You will need openssl headers
-
-	gcc stressdrive.c -o stressdrive -std=c99 -lcrypto
-
-### Usage
+## Usage
 
 	sudo ./stressdrive /dev/rdiskN
-
-### Sample Run
-
-	$ sudo ./stressdrive /dev/rdisk123
-	blockSize: 512
-	blockCount: 468862128
-	speedScale: 16x
-	scaled blockSize: 8192
-	scaled blockCount: 29303883
-	writing random data to /dev/rdisk123
-	writing 100% (block 29303002 of 29303883)
-	1779f30a231c1d07c578b0e4ee49fde159210d95 <= SHA-1 of written data
-	verifying written data
-	reading 100% (block 29302306 of 29303883)
-	1779f30a231c1d07c578b0e4ee49fde159210d95 <= SHA-1 of read data
-	SUCCESS
-
-That run took about 10 hours on a 240GB SSD.
 
 ### Run Only Against Entire, Unmounted, Physical Devices
 
@@ -55,6 +17,49 @@ That run took about 10 hours on a 240GB SSD.
 Practically: your device path should always be in the form of `/dev/rdiskX` (not `/dev/rdiskXsX`). stressdrive's results can only be trusted if it was allowed to fill the entire device to the device's advertised information-theoretic maximum.
 
 Imagine pointing stressdrive at just a logical partition. If the drive failed during the test it's possible to get back a clean read of the random data just written, while a block outside the device's partition is no longer correct. That would not be an accurate test result.
+
+## Sample Run
+
+Here's stressdrive running against a 2 GB USB Flash drive:
+
+	$ sudo ./stressdrive /dev/rdisk999
+	Password:
+	disk block size: 512
+	disk block count: 3948424
+	buffer size: 8388608
+	succesfully created no idle assertion
+	writing random data to /dev/rdisk999
+	writing 100.0% (3948424 of 3948424) 00:03:54
+	6519594c7bf64d5e4e087cfbc5ba6324d25e8c0d <= SHA-1 of written data
+	verifying written data
+	reading 100.0% (3948424 of 3948424) 00:01:24
+	6519594c7bf64d5e4e087cfbc5ba6324d25e8c0d <= SHA-1 of read data
+	SUCCESS
+	succesfully released no idle assertion
+
+## Building
+
+### macOS
+
+First, you'll need OpenSSL, which you should install via homebrew:
+
+	brew install openssl
+
+Then you can just:
+
+	xcodebuild
+
+Or compile it directly:
+
+	gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
+
+### Ubuntu
+
+	sudo apt-get install libssl-dev # You will need openssl headers
+
+	gcc stressdrive.c -o stressdrive -std=c99 -lcrypto
+
+## FAQ
 
 ### "How is this better than Disk Utility's 'Zero Out Data'?"
 
@@ -70,6 +75,23 @@ Jens Ayton [informs me](https://twitter.com/ahruman/status/136930141568905217) 7
 
 Indeed you could. I prefer a minimal focused tool whose operation is fixed, its source simple+readable and offers good built-in progress reporting.
 
-### Portablity
+## Version History
 
-`stressdrive` should be easily portable to other Unixes if anyone wants to do that and toss me a Pull Request.
+### v1.2: 2018-01-03 [download](https://github.com/rentzsch/stressdrive/archive/stressdrive-mac-1.1.zip)
+
+- [NEW] Linux support. ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/8))
+- [NEW] Better progress display: elapsed time and ETA. ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/8))
+- [NEW] Use AES 128 CBC with a random key and initialization vector as a much faster source of data sans fixed patterns.  ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/8))
+- [NEW] Don't allow the Mac to idle (sleep) while running.  ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/8))
+- [NEW] Print version alongside usage. ([rentzsch](https://github.com/rentzsch/stressdrive/commit/77253b193308b0670209fa9801d2ecb851a811b6))
+- [CHANGE] Remove speed scaling in favor of a simpler and as fast fixed 8MB copy buffer. ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/8))
+- [FIX] Possible overflow in speedscale. ([Doug Russell](https://github.com/rentzsch/stressdrive/pull/3))
+- [FIX] Xcode project references Homebrew's OpenSSL in a non-version-specific way (so it doesn't break on every update). ([rentzsch](https://github.com/rentzsch/stressdrive/commit/7575853194793d3ee718252f08a7af52853f5424))
+
+### v1.1: 2011-11-17 [download](https://github.com/rentzsch/stressdrive/archive/1.1.zip)
+
+- [NEW] Speed scaling, which increases the copy buffer to the maximum that's still evenly divisible by the drive's capacity. ([rentzsch](https://github.com/rentzsch/stressdrive/commit/a3f4598af5f9957100613ff66240628bb0ab2078))
+
+### v1.0: 2011-11-16 [download](https://github.com/rentzsch/stressdrive/archive/1.0.zip)
+
+- Initial release.
