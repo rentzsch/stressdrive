@@ -104,6 +104,7 @@ void SHA1_Finish(unsigned char *digest, SHA_CTX *ctx, const char *name) {
 
 int main(int argc, const char *argv[]) {
     if (argc != 2) {
+        fprintf(stderr, "stressdrive v1.2\n");
 #ifdef __APPLE__
         fprintf(stderr, "Usage: sudo %s /dev/rdiskN\n", argv[0]);
 #else
