@@ -1,6 +1,6 @@
 // stressdrive.c 1.2
-//   Copyright (c) 2011-2016 Jonathan 'Wolf' Rentzsch: http://rentzsch.com
-//   Some rights reserved: http://opensource.org/licenses/MIT
+//   Copyright (c) 2011-2018 Jonathan 'Wolf' Rentzsch: http://rentzsch.com
+//   Some rights reserved: http://opensource.org/licenses/mit
 //   https://github.com/rentzsch/stressdrive
 
 #define _BSD_SOURCE
