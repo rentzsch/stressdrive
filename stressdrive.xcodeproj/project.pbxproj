@@ -121,9 +121,7 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = /usr/local/opt/openssl/include;
 				INSTALL_PATH = /usr/local/bin;
-				LIBRARY_SEARCH_PATHS = /usr/local/opt/openssl/lib;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = /usr/local/opt/openssl/lib/libcrypto.a;
 				PRODUCT_NAME = stressdrive;
 			};
 			name = Debug;
@@ -136,9 +134,7 @@
 				GCC_MODEL_TUNING = G5;
 				HEADER_SEARCH_PATHS = /usr/local/opt/openssl/include;
 				INSTALL_PATH = /usr/local/bin;
-				LIBRARY_SEARCH_PATHS = /usr/local/opt/openssl/lib;
-				MACOSX_DEPLOYMENT_TARGET = 10.6;
-				OTHER_LDFLAGS = "-lcrypto";
+				OTHER_LDFLAGS = /usr/local/opt/openssl/lib/libcrypto.a;
 				PRODUCT_NAME = stressdrive;
 			};
 			name = Release;
