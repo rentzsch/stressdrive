@@ -51,7 +51,7 @@ Then you can just:
 
 Or compile it directly:
 
-	gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
+	gcc stressdrive.c -o stressdrive -framework IOKit -framework CoreServices -I/usr/local/opt/openssl/include /usr/local/opt/openssl/lib/libcrypto.a
 
 ### Ubuntu
 
@@ -76,6 +76,10 @@ Jens Ayton [informs me](https://twitter.com/ahruman/status/136930141568905217) 7
 Indeed you could. I prefer a minimal focused tool whose operation is fixed, its source simple+readable and offers good built-in progress reporting.
 
 ## Version History
+
+### v1.2.1: 2018-01-04 [download](https://github.com/rentzsch/stressdrive/releases/download/1.2.1/stressdrive-mac-1.2.1.zip)
+
+- [FIX] Statically link libcrypto. ([rentzsch](https://github.com/rentzsch/stressdrive/commit/30eac57352c49d3ebf8d980f12b3369b316f5c97))
 
 ### v1.2: 2018-01-03 [download](https://github.com/rentzsch/stressdrive/releases/download/1.2/stressdrive-mac-1.2.zip)
 
