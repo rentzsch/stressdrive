@@ -21,8 +21,8 @@
 #include <unistd.h>
 
 #ifdef __APPLE__
-#include <sys/disk.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
+#include <sys/disk.h>
 #endif
 
 #ifdef __linux__
@@ -45,6 +45,10 @@
         _a < _b ? _a : _b;                                                     \
     })
 
+#define KILO 1000
+#define MEGA 1000000
+#define GIGA 1000000000
+
 typedef struct {
     uint64_t total;
     const char *name;
@@ -58,7 +62,8 @@ void PROGRESS_Init(PROGRESS_CTX *ctx, uint64_t total, const char *name) {
     ctx->last_display = (struct timeval){0};
 }
 
-void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current) {
+void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current,
+                     uint32_t blockSize) {
     double complete = (double)current / (double)ctx->total;
     printf("\r%s %.1f%% (%" PRIu64 " of %" PRIu64 ")", ctx->name,
            complete * 100.0, current, ctx->total);
@@ -66,6 +71,20 @@ void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current) {
     uint64_t elapsed = now->tv_sec - ctx->start.tv_sec;
     printf(" %02" PRIu64 ":%02" PRIu64 ":%02" PRIu64 "", elapsed / 3600,
            (elapsed / 60) % 60, elapsed % 60);
+
+    if (elapsed > 0) {
+        double speed = (double)current * blockSize / elapsed;
+
+        if (speed > GIGA) {
+            printf(" (%.1f GB/s)", speed / GIGA);
+        } else if (speed > MEGA) {
+            printf(" (%.1f MB/s)", speed / MEGA);
+        } else if (speed > KILO) {
+            printf(" (%.1f KB/s)", speed / KILO);
+        } else {
+            printf(" (%.1f B/s)", speed);
+        }
+    }
 
     if (current != ctx->total && elapsed > 10 && complete > 0.001) {
         uint64_t eta = (1 / complete - 1) * elapsed;
@@ -77,20 +96,20 @@ void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current) {
     fflush(stdout);
 }
 
-void PROGRESS_Update(PROGRESS_CTX *ctx, uint64_t current) {
+void PROGRESS_Update(PROGRESS_CTX *ctx, uint64_t current, uint32_t blockSize) {
     struct timeval now, delta;
     gettimeofday(&now, NULL);
     timersub(&now, &ctx->last_display, &delta);
     if (delta.tv_sec < 1)
         return;
     ctx->last_display = now;
-    _PROGRESS_Print(ctx, &now, current);
+    _PROGRESS_Print(ctx, &now, current, blockSize);
 }
 
-void PROGRESS_Finish(PROGRESS_CTX *ctx) {
+void PROGRESS_Finish(PROGRESS_CTX *ctx, uint32_t blockSize) {
     struct timeval now;
     gettimeofday(&now, NULL);
-    _PROGRESS_Print(ctx, &now, ctx->total);
+    _PROGRESS_Print(ctx, &now, ctx->total, blockSize);
     printf("\n");
 }
 
@@ -195,8 +214,10 @@ int main(int argc, const char *argv[]) {
     printf("writing random data to %s\n", drivePath);
     SHA1_Init(&shaContext);
     PROGRESS_Init(&progress, blockCount, "writing");
-    for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex += bufferBlocks) {
-        uint32_t size = (uint32_t) MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
+    for (uint64_t blockIndex = 0; blockIndex < blockCount;
+         blockIndex += bufferBlocks) {
+        uint32_t size =
+            (uint32_t)MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
         int outSize;
         if (!EVP_EncryptUpdate(&aes, buffer, &outSize, aesInput, size)) {
@@ -215,9 +236,9 @@ int main(int argc, const char *argv[]) {
             exit(EXIT_CALL_FAILED);
         }
         SHA1_Update(&shaContext, buffer, size);
-        PROGRESS_Update(&progress, blockIndex);
+        PROGRESS_Update(&progress, blockIndex, blockSize);
     }
-    PROGRESS_Finish(&progress);
+    PROGRESS_Finish(&progress, blockSize);
 
     uint8_t writtenShaDigest[SHA_DIGEST_LENGTH];
     SHA1_Finish(writtenShaDigest, &shaContext, "written");
@@ -230,17 +251,19 @@ int main(int argc, const char *argv[]) {
     printf("verifying written data\n");
     SHA1_Init(&shaContext);
     PROGRESS_Init(&progress, blockCount, "reading");
-    for (uint64_t blockIndex = 0; blockIndex < blockCount; blockIndex += bufferBlocks) {
-        uint32_t size = (uint32_t) MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
+    for (uint64_t blockIndex = 0; blockIndex < blockCount;
+         blockIndex += bufferBlocks) {
+        uint32_t size =
+            (uint32_t)MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
         if (read(fd, buffer, size) == -1) {
             perror("read() failed");
             exit(EXIT_CALL_FAILED);
         }
         SHA1_Update(&shaContext, buffer, size);
-        PROGRESS_Update(&progress, blockIndex);
+        PROGRESS_Update(&progress, blockIndex, blockSize);
     }
-    PROGRESS_Finish(&progress);
+    PROGRESS_Finish(&progress, blockSize);
 
     uint8_t readShaDigest[SHA_DIGEST_LENGTH];
     SHA1_Finish(readShaDigest, &shaContext, "read");

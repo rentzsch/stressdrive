@@ -77,6 +77,8 @@ Indeed you could. I prefer a minimal focused tool whose operation is fixed, its 
 
 ## Version History
 
+- [NEW] Display speed alongside progress. ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/9))
+
 ### v1.2.1: 2018-01-04 [download](https://github.com/rentzsch/stressdrive/releases/download/1.2.1/stressdrive-mac-1.2.1.zip)
 
 - [FIX] Statically link libcrypto. ([rentzsch](https://github.com/rentzsch/stressdrive/commit/30eac57352c49d3ebf8d980f12b3369b316f5c97))
