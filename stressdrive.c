@@ -202,8 +202,12 @@ int main(int argc, const char *argv[]) {
         exit(EXIT_CALL_FAILED);
     }
 
-    EVP_CIPHER_CTX aes;
-    if (!EVP_EncryptInit(&aes, EVP_aes_128_cbc(), aesKey, aesIv)) {
+    EVP_CIPHER_CTX *aes = EVP_CIPHER_CTX_new();
+    if (!aes) {
+        fprintf(stderr, "EVP_CIPHER_CTX_new() failed\n");
+        exit(EXIT_CALL_FAILED);
+    }
+    if (!EVP_EncryptInit(aes, EVP_aes_128_cbc(), aesKey, aesIv)) {
         fprintf(stderr, "EVP_EncryptInit() failed\n");
         exit(EXIT_CALL_FAILED);
     }
@@ -220,7 +224,7 @@ int main(int argc, const char *argv[]) {
             (uint32_t)MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
         int outSize;
-        if (!EVP_EncryptUpdate(&aes, buffer, &outSize, aesInput, size)) {
+        if (!EVP_EncryptUpdate(aes, buffer, &outSize, aesInput, size)) {
             fprintf(stderr, "EVP_EncryptUpdate() failed\n");
             exit(EXIT_CALL_FAILED);
         }
@@ -239,6 +243,7 @@ int main(int argc, const char *argv[]) {
         PROGRESS_Update(&progress, blockIndex, blockSize);
     }
     PROGRESS_Finish(&progress, blockSize);
+    EVP_CIPHER_CTX_free(aes);
 
     uint8_t writtenShaDigest[SHA_DIGEST_LENGTH];
     SHA1_Finish(writtenShaDigest, &shaContext, "written");
