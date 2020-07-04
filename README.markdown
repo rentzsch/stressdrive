@@ -77,6 +77,11 @@ Indeed you could. I prefer a minimal focused tool whose operation is fixed, its 
 
 ## Version History
 
+### v1.3.1: 2020-07-04 [download](https://github.com/rentzsch/stressdrive/releases/download/1.3.1/stressdrive-mac-1.3.1.zip)
+
+- [DEV] [OpenSSL v1.1.0 now requires dynamic allocation]() of cipher contexts via `EVP_CIPHER_CTX_new()`. ([rentzsch](https://github.com/rentzsch/stressdrive/commit/b3462490ef6817d89b55f6f6eb209d2319e8d842))
+- [DEV] Upgrade to Xcode v11.2.1. ([rentzsch](https://github.com/rentzsch/stressdrive/commit/1d7e6a5918cc903a99337fdc402d3eb343818969))
+
 ### v1.3: 2018-02-19
 
 - [NEW] Display speed alongside progress. ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/9))
