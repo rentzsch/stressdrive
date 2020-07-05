@@ -77,6 +77,10 @@ Indeed you could. I prefer a minimal focused tool whose operation is fixed, its 
 
 ## Version History
 
+### v1.3.2: 2020-07-05 [download](https://github.com/rentzsch/stressdrive/releases/download/1.3.2/stressdrive-mac-1.3.2.zip)
+
+- [CHANGE] Target oldest supported macOS (10.6). ([rentzsch](https://github.com/rentzsch/stressdrive/commit/0dcbe7d8bb356b379276370c54879b9ba75884b3))
+
 ### v1.3.1: 2020-07-04 [download](https://github.com/rentzsch/stressdrive/releases/download/1.3.1/stressdrive-mac-1.3.1.zip)
 
 - [DEV] [OpenSSL v1.1.0 now requires dynamic allocation]() of cipher contexts via `EVP_CIPHER_CTX_new()`. ([rentzsch](https://github.com/rentzsch/stressdrive/commit/b3462490ef6817d89b55f6f6eb209d2319e8d842))
