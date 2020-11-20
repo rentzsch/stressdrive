@@ -2,7 +2,7 @@
 
 `stressdrive` is a macOS and Linux command-line tool meant to verify correct operation of a drive. It does so by filling a drive up with random data and ensuring all the data can be correctly read back.
 
-It was written to verify correct operation of [de-duping SSDs](http://storagemojo.com/2011/06/27/de-dup-too-much-of-good-thing/), but it can be used with normal HDDs or any rewritable block storage device.
+It was written to verify correct operation of [de-duping SSDs](https://web.archive.org/web/20170309100511/http://www.storagemojo.com/2011/06/27/de-dup-too-much-of-good-thing/), but it can be used with normal HDDs or any rewritable block storage device.
 
 **DANGER:** `stressdrive` will overwrite, without warning, all data on the given drive. Be sure to double-check the drive you're aiming it at (`diskutil list` or Disk Utility.app > Select Drive > Info > Disk Identifier).
 
