@@ -122,8 +122,9 @@
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = /usr/local/opt/openssl/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/openssl/lib;
+				OTHER_LDFLAGS = -lcrypto;
 				INSTALL_PATH = /usr/local/bin;
-				OTHER_LDFLAGS = /usr/local/opt/openssl/lib/libcrypto.a;
 				PRODUCT_NAME = stressdrive;
 			};
 			name = Debug;
@@ -137,8 +138,9 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
 				HEADER_SEARCH_PATHS = /usr/local/opt/openssl/include;
+				LIBRARY_SEARCH_PATHS = /usr/local/opt/openssl/lib;
+				OTHER_LDFLAGS = -lcrypto;
 				INSTALL_PATH = /usr/local/bin;
-				OTHER_LDFLAGS = /usr/local/opt/openssl/lib/libcrypto.a;
 				PRODUCT_NAME = stressdrive;
 			};
 			name = Release;
