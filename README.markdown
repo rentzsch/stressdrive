@@ -40,6 +40,7 @@ Here's stressdrive running against a 2 GB USB Flash drive:
 ## Building
 
 ### macOS
+#### using homebrew
 
 First, you'll need OpenSSL, which you should install via homebrew:
 
@@ -51,7 +52,17 @@ Then you can just:
 
 Or compile it directly:
 
-	gcc stressdrive.c -o stressdrive -framework IOKit -framework CoreServices -I/usr/local/opt/openssl/include /usr/local/opt/openssl/lib/libcrypto.a
+	gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
+
+#### using macports
+
+Same commands for macports:
+
+	port install openssl
+
+	xcodebuild PREFIX=/opt/local SEARCH_PREFIX=/opt/local
+
+	gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices -I/opt/local/include -L/opt/local/lib
 
 ### Ubuntu
 
