@@ -37,6 +37,14 @@ Here's stressdrive running against a 2 GB USB Flash drive:
 	SUCCESS
 	succesfully released no idle assertion
 
+## Installing
+### macOS
+#### using macports
+
+This will probably need sudo:
+
+	port install stressdrive
+
 ## Building
 
 ### macOS
