@@ -175,14 +175,14 @@ int main(int argc, const char *argv[]) {
     uint16_t bufferBlocks = bufferSize / blockSize;
 
 #ifdef __APPLE__
-    IOPMAssertionID noIdleAssertionID;
-    IOReturn noIdleAssertionCreated = IOPMAssertionCreateWithName(
+    IOPMAssertionID noIdleSleepAssertionID;
+    IOReturn noIdleSleepAssertionCreated = IOPMAssertionCreateWithName(
         kIOPMAssertionTypeNoIdleSleep, kIOPMAssertionLevelOn,
-        CFSTR("stressdrive running"), &noIdleAssertionID);
-    if (kIOReturnSuccess == noIdleAssertionCreated) {
-        printf("succesfully created no idle assertion\n");
+        CFSTR("stressdrive running"), &noIdleSleepAssertionID);
+    if (kIOReturnSuccess == noIdleSleepAssertionCreated) {
+        printf("succesfully created no idle sleep assertion\n");
     } else {
-        printf("failed to create no idle assertion\n");
+        printf("failed to create no idle sleep assertion\n");
     }
 #endif
 
@@ -283,11 +283,11 @@ int main(int argc, const char *argv[]) {
     }
 
 #ifdef __APPLE__
-    if (kIOReturnSuccess == noIdleAssertionCreated) {
-        if (kIOReturnSuccess == IOPMAssertionRelease(noIdleAssertionID)) {
-            printf("succesfully released no idle assertion\n");
+    if (kIOReturnSuccess == noIdleSleepAssertionCreated) {
+        if (kIOReturnSuccess == IOPMAssertionRelease(noIdleSleepAssertionID)) {
+            printf("succesfully released no idle sleep assertion\n");
         } else {
-            printf("failed to release no idle assertion\n");
+            printf("failed to release no idle sleep assertion\n");
         }
     }
 #endif
