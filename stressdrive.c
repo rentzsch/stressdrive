@@ -174,7 +174,7 @@ int main(int argc, const char *argv[]) {
 
     uint16_t bufferBlocks = bufferSize / blockSize;
     uint32_t checkFrequency = 1024 * 1024 * 1024 / blockSize;
-    uint32_t checkCount = (blockCount + bufferBlocks - 1) / checkFrequency;
+    uint64_t checkCount = (blockCount + bufferBlocks - 1) / checkFrequency;
     uint8_t *checkDigests = malloc(checkCount * SHA_DIGEST_LENGTH);
     if (checkDigests == NULL) {
         perror("malloc() failed");
@@ -250,7 +250,7 @@ int main(int argc, const char *argv[]) {
         PROGRESS_Update(&progress, blockIndex, blockSize);
 
         if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
-          uint32_t checkIndex = blockIndex / checkFrequency;
+          uint64_t checkIndex = blockIndex / checkFrequency;
           SHA1_Final(checkDigests + checkIndex * SHA_DIGEST_LENGTH, &shaContext);
           SHA1_Init(&shaContext);
         }
@@ -285,7 +285,7 @@ int main(int argc, const char *argv[]) {
         PROGRESS_Update(&progress, blockIndex, blockSize);
 
         if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
-          uint32_t checkIndex = blockIndex / checkFrequency;
+          uint64_t checkIndex = blockIndex / checkFrequency;
           SHA1_Final(readShaDigest, &shaContext);
           SHA1_Init(&shaContext);
           if (bcmp(checkDigests + checkIndex * SHA_DIGEST_LENGTH, readShaDigest, SHA_DIGEST_LENGTH) != 0) {
