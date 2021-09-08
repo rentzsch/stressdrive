@@ -77,7 +77,7 @@
 		08FB7793FE84155DC02AAC07 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 1120;
+				LastUpgradeCheck = 1250;
 			};
 			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "stressdrive" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -121,13 +121,14 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_MODEL_TUNING = G5;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				PREFIX = /usr/local;
-				SEARCH_PREFIX = "$(PREFIX)/opt/openssl";
 				HEADER_SEARCH_PATHS = "$(SEARCH_PREFIX)/include";
-				LIBRARY_SEARCH_PATHS = "$(SEARCH_PREFIX)/lib";
-				OTHER_LDFLAGS = -lcrypto;
 				INSTALL_PATH = "$(PREFIX)/bin";
+				LIBRARY_SEARCH_PATHS = "$(SEARCH_PREFIX)/lib";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				OTHER_LDFLAGS = "-lcrypto";
+				PREFIX = /opt/homebrew;
 				PRODUCT_NAME = stressdrive;
+				SEARCH_PREFIX = "$(PREFIX)/opt/openssl";
 			};
 			name = Debug;
 		};
@@ -139,13 +140,14 @@
 				CODE_SIGN_IDENTITY = "-";
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_MODEL_TUNING = G5;
-				PREFIX = /usr/local;
-				SEARCH_PREFIX = "$(PREFIX)/opt/openssl";
 				HEADER_SEARCH_PATHS = "$(SEARCH_PREFIX)/include";
-				LIBRARY_SEARCH_PATHS = "$(SEARCH_PREFIX)/lib";
-				OTHER_LDFLAGS = -lcrypto;
 				INSTALL_PATH = "$(PREFIX)/bin";
+				LIBRARY_SEARCH_PATHS = "$(SEARCH_PREFIX)/lib";
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				OTHER_LDFLAGS = "-lcrypto";
+				PREFIX = /opt/homebrew;
 				PRODUCT_NAME = stressdrive;
+				SEARCH_PREFIX = "$(PREFIX)/opt/openssl";
 			};
 			name = Release;
 		};
@@ -165,6 +167,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -203,6 +206,7 @@
 				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
