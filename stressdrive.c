@@ -173,6 +173,13 @@ int main(int argc, const char *argv[]) {
     }
 
     uint16_t bufferBlocks = bufferSize / blockSize;
+    uint32_t checkFrequency = 1024 * 1024 * 1024 / blockSize;
+    uint32_t checkCount = (blockCount + bufferBlocks - 1) / checkFrequency;
+    uint8_t *checkDigests = malloc(checkCount * SHA_DIGEST_LENGTH);
+    if (checkDigests == NULL) {
+        perror("malloc() failed");
+        exit(EXIT_CALL_FAILED);
+    }
 
 #ifdef __APPLE__
     IOPMAssertionID noIdleSleepAssertionID;
@@ -241,6 +248,12 @@ int main(int argc, const char *argv[]) {
         }
         SHA1_Update(&shaContext, buffer, size);
         PROGRESS_Update(&progress, blockIndex, blockSize);
+
+        if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
+          uint32_t checkIndex = blockIndex / checkFrequency;
+          SHA1_Final(checkDigests + checkIndex * SHA_DIGEST_LENGTH, &shaContext);
+          SHA1_Init(&shaContext);
+        }
     }
     PROGRESS_Finish(&progress, blockSize);
     EVP_CIPHER_CTX_free(aes);
@@ -252,6 +265,9 @@ int main(int argc, const char *argv[]) {
         perror("lseek() failed");
         exit(EXIT_CALL_FAILED);
     }
+
+    int exitCode = EXIT_SUCCESS;
+    uint8_t readShaDigest[SHA_DIGEST_LENGTH];
 
     printf("verifying written data\n");
     SHA1_Init(&shaContext);
@@ -267,16 +283,24 @@ int main(int argc, const char *argv[]) {
         }
         SHA1_Update(&shaContext, buffer, size);
         PROGRESS_Update(&progress, blockIndex, blockSize);
+
+        if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
+          uint32_t checkIndex = blockIndex / checkFrequency;
+          SHA1_Final(readShaDigest, &shaContext);
+          SHA1_Init(&shaContext);
+          if (bcmp(checkDigests + checkIndex * SHA_DIGEST_LENGTH, readShaDigest, SHA_DIGEST_LENGTH) != 0) {
+            printf("\nFailed intermediate checksum for bytes %" PRIu64 "...%" PRIu64 "\n",
+                   (blockIndex + bufferBlocks - checkFrequency) * blockSize,
+                   blockIndex * blockSize + size);
+            exitCode = EXIT_FAILURE;
+          }
+        }
     }
     PROGRESS_Finish(&progress, blockSize);
-
-    uint8_t readShaDigest[SHA_DIGEST_LENGTH];
     SHA1_Finish(readShaDigest, &shaContext, "read");
 
-    int exitCode;
-    if (bcmp(writtenShaDigest, readShaDigest, SHA_DIGEST_LENGTH) == 0) {
+    if (exitCode == EXIT_SUCCESS && bcmp(writtenShaDigest, readShaDigest, SHA_DIGEST_LENGTH) == 0) {
         printf("SUCCESS\n");
-        exitCode = EXIT_SUCCESS;
     } else {
         printf("FAILURE\n");
         exitCode = EXIT_FAILURE;
@@ -292,6 +316,7 @@ int main(int argc, const char *argv[]) {
     }
 #endif
 
+    free(checkDigests);
     free(buffer);
     close(fd);
 
