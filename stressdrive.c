@@ -139,6 +139,11 @@ int main(int argc, const char *argv[]) {
         exit(EXIT_CALL_FAILED);
     }
 
+    if (flock(fd, LOCK_EX | LOCK_NB) == -1) {
+        perror("flock() failed");
+        exit(EXIT_CALL_FAILED);
+    }
+
     uint32_t blockSize;
 #ifdef DKIOCGETBLOCKSIZE
     if (ioctl(fd, DKIOCGETBLOCKSIZE, &blockSize) == -1) {
