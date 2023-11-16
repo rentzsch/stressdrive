@@ -15,6 +15,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
+#include <sys/file.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <sys/time.h>
