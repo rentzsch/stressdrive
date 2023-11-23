@@ -1,5 +1,5 @@
-// stressdrive.c 1.3.2
-//   Copyright (c) 2011-2020 Jonathan 'Wolf' Rentzsch: http://rentzsch.com
+// stressdrive.c 1.4
+//   Copyright (c) 2011-2023 Jonathan 'Wolf' Rentzsch: http://rentzsch.com
 //   Some rights reserved: http://opensource.org/licenses/mit
 //   https://github.com/rentzsch/stressdrive
 
@@ -124,7 +124,7 @@ void SHA1_Finish(unsigned char *digest, SHA_CTX *ctx, const char *name) {
 
 int main(int argc, const char *argv[]) {
     if (argc != 2) {
-        fprintf(stderr, "stressdrive v1.3.2\n");
+        fprintf(stderr, "stressdrive v1.4\n");
 #ifdef __APPLE__
         fprintf(stderr, "Usage: sudo %s /dev/rdiskN\n", argv[0]);
 #else
