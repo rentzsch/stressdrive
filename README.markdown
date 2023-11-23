@@ -96,6 +96,28 @@ Indeed you could. I prefer a minimal focused tool whose operation is fixed, its 
 
 ## Version History
 
+### v1.4: 2023-11-23 [download](https://github.com/rentzsch/stressdrive/releases/download/1.4/stressdrive-mac-1.4.zip)
+
+- [NEW] Store a checksum every 1GB, allowing faster reporting of drive failure. It requires 20 bytes per gigabyte, so 80K for a 4TB drive. ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/13))
+
+- [NEW] Apply an exclusive advisory lock on device after opening, making running two instances on the same drive impossible ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/14))
+
+- [DOC] Add instructions for installing using macports ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/11))
+
+- [FIX] Include sys/file.h missing at least on ubuntu ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/17))
+
+- [FIX] Upgrade checkCount to uint64_t to avoid precision loss warning ([rentzsch](https://github.com/rentzsch/stressdrive/commit/e3e0e2b91305596197a1b6e9fb10552fd3146387))
+
+- [DEV] Refactor xcode project to allow different prefix, update instructions for macOS ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/10))
+
+- [DEV] Mention sleep in idle assertion message and variable name ([Ivan Kuchin](https://github.com/rentzsch/stressdrive/pull/12))
+
+- [FIX] Xcode v12.5, Homebrew on Apple Silicon ([rentzsch](https://github.com/rentzsch/stressdrive/commit/5a2a001b7dbc16e99a7de0e50bed9eda50dca31f))
+
+- [DEV] Xcode 15 bottoms out at 10.13 as a minimum deployment target ([rentzsch](https://github.com/rentzsch/stressdrive/commit/7e0e0f26a6390a0c026089a5601fcbc62f08d05a))
+
+- [DOC] Use archive.org link for 404 storagemojo.com article ([rentzsch](https://github.com/rentzsch/stressdrive/commit/ed7fce674ff1c32e3c6cb5319f56cb8bfbf9a2f5))
+
 ### v1.3.2: 2020-07-05 [download](https://github.com/rentzsch/stressdrive/releases/download/1.3.2/stressdrive-mac-1.3.2.zip)
 
 - [CHANGE] Target oldest supported macOS (10.6). ([rentzsch](https://github.com/rentzsch/stressdrive/commit/0dcbe7d8bb356b379276370c54879b9ba75884b3))
