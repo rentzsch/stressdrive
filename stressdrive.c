@@ -115,8 +115,8 @@ void PROGRESS_Finish(PROGRESS_CTX *ctx, uint32_t blockSize) {
 }
 
 #if OPENSSL_VERSION_NUMBER < 0x10100000L
-#  define EVP_MD_CTX_new   EVP_MD_CTX_create
-#  define EVP_MD_CTX_free  EVP_MD_CTX_destroy
+#define EVP_MD_CTX_new EVP_MD_CTX_create
+#define EVP_MD_CTX_free EVP_MD_CTX_destroy
 #endif
 
 void DIGEST_Init(EVP_MD_CTX *digestContext) {
@@ -286,9 +286,10 @@ int main(int argc, const char *argv[]) {
         PROGRESS_Update(&progress, blockIndex, blockSize);
 
         if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
-          uint64_t checkIndex = blockIndex / checkFrequency;
-          DIGEST_Final(digestContext, checkDigests + checkIndex * SHA_DIGEST_LENGTH);
-          DIGEST_Init(digestContext);
+            uint64_t checkIndex = blockIndex / checkFrequency;
+            DIGEST_Final(digestContext,
+                         checkDigests + checkIndex * SHA_DIGEST_LENGTH);
+            DIGEST_Init(digestContext);
         }
     }
     PROGRESS_Finish(&progress, blockSize);
@@ -322,15 +323,17 @@ int main(int argc, const char *argv[]) {
         PROGRESS_Update(&progress, blockIndex, blockSize);
 
         if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
-          uint64_t checkIndex = blockIndex / checkFrequency;
-          DIGEST_Final(digestContext, readShaDigest);
-          DIGEST_Init(digestContext);
-          if (bcmp(checkDigests + checkIndex * SHA_DIGEST_LENGTH, readShaDigest, SHA_DIGEST_LENGTH) != 0) {
-            printf("\nFailed intermediate checksum for bytes %" PRIu64 "...%" PRIu64 "\n",
-                   (blockIndex + bufferBlocks - checkFrequency) * blockSize,
-                   blockIndex * blockSize + size);
-            exitCode = EXIT_FAILURE;
-          }
+            uint64_t checkIndex = blockIndex / checkFrequency;
+            DIGEST_Final(digestContext, readShaDigest);
+            DIGEST_Init(digestContext);
+            if (bcmp(checkDigests + checkIndex * SHA_DIGEST_LENGTH,
+                     readShaDigest, SHA_DIGEST_LENGTH) != 0) {
+                printf("\nFailed intermediate checksum for bytes %" PRIu64
+                       "...%" PRIu64 "\n",
+                       (blockIndex + bufferBlocks - checkFrequency) * blockSize,
+                       blockIndex * blockSize + size);
+                exitCode = EXIT_FAILURE;
+            }
         }
     }
     PROGRESS_Finish(&progress, blockSize);
@@ -338,7 +341,8 @@ int main(int argc, const char *argv[]) {
     DIGEST_Print(readShaDigest, "read");
     EVP_MD_CTX_free(digestContext);
 
-    if (exitCode == EXIT_SUCCESS && bcmp(writtenShaDigest, readShaDigest, SHA_DIGEST_LENGTH) == 0) {
+    if (exitCode == EXIT_SUCCESS &&
+        bcmp(writtenShaDigest, readShaDigest, SHA_DIGEST_LENGTH) == 0) {
         printf("SUCCESS\n");
     } else {
         printf("FAILURE\n");
