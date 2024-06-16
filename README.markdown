@@ -94,6 +94,14 @@ Jens Ayton [informs me](https://twitter.com/ahruman/status/136930141568905217) 7
 
 Indeed you could. I prefer a minimal focused tool whose operation is fixed, its source simple+readable and offers good built-in progress reporting.
 
+### When I list my disks I do not see "rdiskX", I only see "diskX"
+
+When you list the disks on your computer you are shown the Block Devices. When you access Block Devices via "diskX", reads and writes are buffered through the OS.
+
+Unix systems also allow direct and unbuffered access to the Raw Devices using the format "rdiskX". stressdrive requires raw access to ensure fast, precise, and predictable disk operations.
+
+Once you've identified the top-level (physical, not synthesized) drive identifier that looks like 'diskX', simply add an 'r' for use by the app. For example, if your `diskutil list` shows `/dev/disk4` as your target, use `/dev/rdisk4` in your command.
+
 ## Version History
 
 ### v1.4: 2023-11-23 [download](https://github.com/rentzsch/stressdrive/releases/download/1.4/stressdrive-mac-1.4.zip)
