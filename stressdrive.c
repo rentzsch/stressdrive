@@ -33,6 +33,10 @@
 #define HASH_DIGEST_LENGTH SHA_DIGEST_LENGTH
 #define HASH_INIT_FUNCTION EVP_sha1
 
+#define CIPHER_KEY_SIZE (128 / 8)
+#define CIPHER_BLOCK_SIZE AES_BLOCK_SIZE
+#define CIPHER_INIT_FUNCTION EVP_aes_128_cbc
+
 #define EXIT_CALL_FAILED 2
 
 #define MAX(a, b)                                                              \
@@ -235,31 +239,30 @@ int main(int argc, const char *argv[]) {
 
     PROGRESS_CTX progress;
 
-    int aesKeylength = 128;
-    unsigned char aesKey[aesKeylength / 8];
-    if (!RAND_bytes(aesKey, aesKeylength / 8)) {
+    unsigned char cipherKey[CIPHER_KEY_SIZE];
+    if (!RAND_bytes(cipherKey, CIPHER_KEY_SIZE)) {
         fprintf(stderr, "RAND_bytes() failed\n");
         exit(EXIT_CALL_FAILED);
     }
 
-    unsigned char aesIv[AES_BLOCK_SIZE];
-    if (!RAND_bytes(aesIv, AES_BLOCK_SIZE)) {
+    unsigned char cipherIv[CIPHER_BLOCK_SIZE];
+    if (!RAND_bytes(cipherIv, CIPHER_BLOCK_SIZE)) {
         fprintf(stderr, "RAND_bytes() failed\n");
         exit(EXIT_CALL_FAILED);
     }
 
-    EVP_CIPHER_CTX *aes = EVP_CIPHER_CTX_new();
-    if (!aes) {
+    EVP_CIPHER_CTX *cipher = EVP_CIPHER_CTX_new();
+    if (!cipher) {
         fprintf(stderr, "EVP_CIPHER_CTX_new() failed\n");
         exit(EXIT_CALL_FAILED);
     }
-    if (!EVP_EncryptInit(aes, EVP_aes_128_cbc(), aesKey, aesIv)) {
+    if (!EVP_EncryptInit(cipher, CIPHER_INIT_FUNCTION(), cipherKey, cipherIv)) {
         fprintf(stderr, "EVP_EncryptInit() failed\n");
         exit(EXIT_CALL_FAILED);
     }
 
-    unsigned char *aesInput = malloc(bufferSize);
-    memset(aesInput, 0, bufferSize);
+    unsigned char *cipherInput = malloc(bufferSize);
+    memset(cipherInput, 0, bufferSize);
 
     printf("writing random data to %s\n", drivePath);
     DIGEST_Init(digestContext);
@@ -270,7 +273,7 @@ int main(int argc, const char *argv[]) {
             (uint32_t)MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
         int outSize;
-        if (!EVP_EncryptUpdate(aes, buffer, &outSize, aesInput, size)) {
+        if (!EVP_EncryptUpdate(cipher, buffer, &outSize, cipherInput, size)) {
             fprintf(stderr, "EVP_EncryptUpdate() failed\n");
             exit(EXIT_CALL_FAILED);
         }
@@ -296,7 +299,7 @@ int main(int argc, const char *argv[]) {
         }
     }
     PROGRESS_Finish(&progress, blockSize);
-    EVP_CIPHER_CTX_free(aes);
+    EVP_CIPHER_CTX_free(cipher);
 
     uint8_t writtenHashDigest[HASH_DIGEST_LENGTH];
     DIGEST_Final(digestContext, writtenHashDigest);
