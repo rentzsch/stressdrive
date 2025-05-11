@@ -269,6 +269,9 @@ int main(int argc, const char *argv[]) {
     PROGRESS_Init(&progress, blockCount, "writing");
     for (uint64_t blockIndex = 0; blockIndex < blockCount;
          blockIndex += bufferBlocks) {
+        if (blockIndex)
+            PROGRESS_Update(&progress, blockIndex, blockSize);
+
         uint32_t size =
             (uint32_t)MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
@@ -289,7 +292,6 @@ int main(int argc, const char *argv[]) {
             exit(EXIT_CALL_FAILED);
         }
         DIGEST_Update(digestContext, buffer, size);
-        PROGRESS_Update(&progress, blockIndex, blockSize);
 
         if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
             uint64_t checkIndex = blockIndex / checkFrequency;
@@ -318,6 +320,9 @@ int main(int argc, const char *argv[]) {
     PROGRESS_Init(&progress, blockCount, "reading");
     for (uint64_t blockIndex = 0; blockIndex < blockCount;
          blockIndex += bufferBlocks) {
+        if (blockIndex)
+            PROGRESS_Update(&progress, blockIndex, blockSize);
+
         uint32_t size =
             (uint32_t)MIN(bufferBlocks, blockCount - blockIndex) * blockSize;
 
@@ -326,7 +331,6 @@ int main(int argc, const char *argv[]) {
             exit(EXIT_CALL_FAILED);
         }
         DIGEST_Update(digestContext, buffer, size);
-        PROGRESS_Update(&progress, blockIndex, blockSize);
 
         if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
             uint64_t checkIndex = blockIndex / checkFrequency;
