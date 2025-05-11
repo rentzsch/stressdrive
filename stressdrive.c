@@ -53,28 +53,41 @@
 typedef struct {
     uint64_t total;
     const char *name;
-    struct timeval start, last_display;
+    uint64_t start, last_display;
 } PROGRESS_CTX;
+
+uint64_t monotonic_time_ms() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
+}
+
+void print_ms_human(uint64_t ms, const char *prefix, const char *suffix) {
+    uint64_t s = ms / 1000;
+    uint64_t m = s / 60;
+    uint64_t h = m / 60;
+    printf("%s%02" PRIu64 ":%02" PRIu64 ":%02" PRIu64 "%s", prefix, h, m % 60,
+           s % 60, suffix);
+}
 
 void PROGRESS_Init(PROGRESS_CTX *ctx, uint64_t total, const char *name) {
     ctx->total = total;
     ctx->name = name;
-    gettimeofday(&ctx->start, NULL);
-    ctx->last_display = (struct timeval){0};
+    ctx->start = monotonic_time_ms();
+    ctx->last_display = 0;
 }
 
-void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current,
+void _PROGRESS_Print(PROGRESS_CTX *ctx, uint64_t now, uint64_t current,
                      uint32_t blockSize) {
     double complete = (double)current / (double)ctx->total;
     printf("\r%s %.1f%% (%" PRIu64 " of %" PRIu64 ")", ctx->name,
            complete * 100.0, current, ctx->total);
 
-    uint64_t elapsed = now->tv_sec - ctx->start.tv_sec;
-    printf(" %02" PRIu64 ":%02" PRIu64 ":%02" PRIu64 "", elapsed / 3600,
-           (elapsed / 60) % 60, elapsed % 60);
+    uint64_t elapsed = now - ctx->start;
+    print_ms_human(elapsed, " ", "");
 
     if (elapsed > 0) {
-        double speed = (double)current * blockSize / elapsed;
+        double speed = (double)current * blockSize * 1000 / elapsed;
 
         if (speed > GIGA) {
             printf(" (%.1f GB/s)", speed / GIGA);
@@ -87,10 +100,9 @@ void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current,
         }
     }
 
-    if (current != ctx->total && elapsed > 10 && complete > 0.001) {
+    if (current != ctx->total && elapsed > 10000 && complete > 0.001) {
         uint64_t eta = (1 / complete - 1) * elapsed;
-        printf(" (ETA: %02" PRIu64 ":%02" PRIu64 ":%02" PRIu64 ")", eta / 3600,
-               (eta / 60) % 60, eta % 60);
+        print_ms_human(eta, " (ETA: ", ")");
     }
 
     printf("\e[K");
@@ -98,19 +110,16 @@ void _PROGRESS_Print(PROGRESS_CTX *ctx, struct timeval *now, uint64_t current,
 }
 
 void PROGRESS_Update(PROGRESS_CTX *ctx, uint64_t current, uint32_t blockSize) {
-    struct timeval now, delta;
-    gettimeofday(&now, NULL);
-    timersub(&now, &ctx->last_display, &delta);
-    if (delta.tv_sec < 1)
+    uint64_t now = monotonic_time_ms();
+    if (now - ctx->last_display < 1000)
         return;
     ctx->last_display = now;
-    _PROGRESS_Print(ctx, &now, current, blockSize);
+    _PROGRESS_Print(ctx, now, current, blockSize);
 }
 
 void PROGRESS_Finish(PROGRESS_CTX *ctx, uint32_t blockSize) {
-    struct timeval now;
-    gettimeofday(&now, NULL);
-    _PROGRESS_Print(ctx, &now, ctx->total, blockSize);
+    uint64_t now = monotonic_time_ms();
+    _PROGRESS_Print(ctx, now, ctx->total, blockSize);
     printf("\n");
 }
 
