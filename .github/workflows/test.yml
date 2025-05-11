@@ -1,0 +1,50 @@
+name: test
+on:
+  push:
+  pull_request:
+jobs:
+  check:
+    runs-on: "${{ matrix.os }}"
+    strategy:
+      matrix:
+        os:
+        - macos-latest
+        - ubuntu-latest
+      fail-fast: false
+    steps:
+    - uses: actions/checkout@v4
+    - name: build
+      run: |
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install openssl@3
+          export OPENSSL_DIR=$(brew --prefix openssl@3)
+          gcc stressdrive.c -o stressdrive -lcrypto -framework IOKit -framework CoreServices -I"$OPENSSL_DIR/include" -L"$OPENSSL_DIR/lib"
+        elif [[ "$RUNNER_OS" == "Linux" ]]; then
+          sudo apt-get install libssl-dev
+          gcc stressdrive.c -o stressdrive -lcrypto
+        fi
+    - name: create ram disk
+      run: |
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          # xargs to trim whitespace
+          ram_disk=$(hdiutil attach -nomount ram://$(( 4 * 1024 * 1024 * 1024 / 512 )) | xargs)
+          ln -s "${ram_disk/disk/rdisk}" ram_disk
+        elif [[ "$RUNNER_OS" == "Linux" ]]; then
+          mkdir tmpfs
+          sudo mount -t tmpfs -o noswap,size=4g tmpfs tmpfs
+          dd if=/dev/zero of=tmpfs/data bs=1G count=4
+          ram_disk=$(sudo losetup --find --show tmpfs/data)
+          sudo chmod 777 "$ram_disk"
+          ln -s "$ram_disk" ram_disk
+        fi
+    - name: test ram disk entropy when filled with zero(e)s
+      run: |
+        head -c $(( 256 * 1024 * 1024 )) ram_disk > 256M
+        ! ./test_entropy 256M
+    - name: run stressdrive on ram disk
+      run: |
+        ./stressdrive ram_disk
+    - name: test ram disk entropy when filled with random data
+      run: |
+        head -c $(( 256 * 1024 * 1024 )) ram_disk > 256M
+        ./test_entropy 256M
