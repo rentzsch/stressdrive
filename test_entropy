@@ -1,0 +1,27 @@
+#!/bin/bash
+
+if [[ $# -ne 1 ]]; then
+  echo "Usage: $0 path" >&2
+  exit 1
+fi
+
+file_path="$1"
+
+original_size=$(cat "$file_path" | wc -c)
+
+if command -v pv &> /dev/null; then
+  cat(){
+    pv --size "$original_size" $1
+  }
+fi
+
+gzipped_size=$(cat "$file_path" | gzip --best --stdout | wc -c)
+bzipped_size=$(cat "$file_path" | bzip2 --best --stdout | wc -c)
+
+echo "original: $original_size"
+echo "gzippped: $gzipped_size ($(( gzipped_size * 100 / original_size ))%)"
+echo "bzippped: $bzipped_size ($(( bzipped_size * 100 / original_size ))%)"
+
+if (( gzipped_size < original_size || bzipped_size < original_size )); then
+  exit 1
+fi
