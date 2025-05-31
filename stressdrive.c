@@ -50,6 +50,12 @@
 #define MEGA 1000000
 #define GIGA 1000000000
 
+#ifdef CLOCK_UPTIME_RAW
+#define MONOTONIC_CLOCK_ID CLOCK_UPTIME_RAW
+#else
+#define MONOTONIC_CLOCK_ID CLOCK_MONOTONIC
+#endif
+
 typedef struct {
     uint64_t total;
     const char *name;
@@ -58,7 +64,7 @@ typedef struct {
 
 uint64_t monotonic_time_ms() {
     struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
+    clock_gettime(MONOTONIC_CLOCK_ID, &ts);
     return ts.tv_sec * 1000 + ts.tv_nsec / 1000000;
 }
 
