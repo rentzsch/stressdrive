@@ -309,7 +309,7 @@ void *reader_thread(void *arg) {
             pthread_mutex_unlock(&buffer->mutex);
         }
 
-        if (read(fd, buffer->data, size) == -1) {
+        if (read(fd, buffer->data, size) != size) {
             perror("read() failed");
             exit(EXIT_CALL_FAILED);
         }
