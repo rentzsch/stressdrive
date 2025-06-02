@@ -42,8 +42,12 @@ jobs:
         head -c $(( 256 * 1024 * 1024 )) ram_disk > 256M
         ! ./test_entropy 256M
     - name: run stressdrive on ram disk
+      shell: bash -eo pipefail {0}
       run: |
-        ./stressdrive ram_disk
+        ./stressdrive ram_disk | tee output
+    - name: check the hash list checksum
+      run: |
+        grep $(./hash_list_checksum ram_disk) output
     - name: test ram disk entropy when filled with random data
       run: |
         head -c $(( 256 * 1024 * 1024 )) ram_disk > 256M

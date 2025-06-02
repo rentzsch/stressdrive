@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+# encoding: ASCII-8BIT
+
+require 'digest'
+
+BLOCK_SIZE = 2**30 # 1GB
+CHUNK_SIZE = 2**15 # 32KB
+
+abort 'Expected one path to checksum' unless ARGV.length == 1
+
+root_digest = Digest::SHA1.new
+File.open(ARGV.first, 'rb') do |f|
+  buf = ''
+  until f.eof?
+    block_digest = Digest::SHA1.new
+    (BLOCK_SIZE / CHUNK_SIZE).times do
+      break unless f.read(CHUNK_SIZE, buf)
+
+      block_digest.update(buf)
+    end
+    root_digest.update(block_digest.digest)
+  end
+end
+puts root_digest.hexdigest
