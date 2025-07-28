@@ -31,6 +31,9 @@
 #include <linux/fs.h>
 #endif
 
+#define HASH_DIGEST_LENGTH SHA_DIGEST_LENGTH
+#define HASH_INIT_FUNCTION EVP_sha1
+
 #define EXIT_CALL_FAILED 2
 
 #define MAX(a, b)                                                              \
@@ -136,7 +139,7 @@ void PROGRESS_Finish(PROGRESS_CTX *ctx, uint32_t blockSize) {
 #endif
 
 void DIGEST_Init(EVP_MD_CTX *digestContext) {
-    if (1 != EVP_DigestInit_ex(digestContext, EVP_sha1(), NULL)) {
+    if (1 != EVP_DigestInit_ex(digestContext, HASH_INIT_FUNCTION(), NULL)) {
         fprintf(stderr, "Digest initialisation failed\n");
         exit(EXIT_CALL_FAILED);
     }
@@ -157,10 +160,10 @@ void DIGEST_Final(EVP_MD_CTX *digestContext, unsigned char *digest) {
 }
 
 void DIGEST_Print(unsigned char *digest, const char *name) {
-    for (size_t i = 0; i < SHA_DIGEST_LENGTH; i++) {
+    for (size_t i = 0; i < HASH_DIGEST_LENGTH; i++) {
         printf("%02x", digest[i]);
     }
-    printf(" <= SHA-1 of %s data\n", name);
+    printf(" <= root hash digest of %s data\n", name);
 }
 
 int main(int argc, const char *argv[]) {
@@ -221,8 +224,8 @@ int main(int argc, const char *argv[]) {
 
     uint16_t bufferBlocks = bufferSize / blockSize;
     uint32_t checkFrequency = 1024 * 1024 * 1024 / blockSize;
-    uint64_t checkCount = (blockCount + bufferBlocks - 1) / checkFrequency;
-    uint8_t *checkDigests = malloc(checkCount * SHA_DIGEST_LENGTH);
+    uint64_t checkCount = (blockCount + checkFrequency - 1) / checkFrequency;
+    uint8_t *checkDigests = malloc(checkCount * HASH_DIGEST_LENGTH);
     if (checkDigests == NULL) {
         perror("malloc() failed");
         exit(EXIT_CALL_FAILED);
@@ -240,8 +243,9 @@ int main(int argc, const char *argv[]) {
     }
 #endif
 
-    EVP_MD_CTX *digestContext;
-    if ((digestContext = EVP_MD_CTX_new()) == NULL) {
+    EVP_MD_CTX *digestContext, *rootDigestContext;
+    if ((digestContext = EVP_MD_CTX_new()) == NULL ||
+        (rootDigestContext = EVP_MD_CTX_new()) == NULL) {
         fprintf(stderr, "Digest context creation failed\n");
         exit(EXIT_CALL_FAILED);
     }
@@ -301,19 +305,25 @@ int main(int argc, const char *argv[]) {
         DIGEST_Update(digestContext, buffer, size);
         PROGRESS_Update(&progress, blockIndex, blockSize);
 
-        if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
+        uint64_t hashedBlocks = blockIndex + bufferBlocks;
+        if (hashedBlocks % checkFrequency == 0 || hashedBlocks >= blockCount) {
             uint64_t checkIndex = blockIndex / checkFrequency;
             DIGEST_Final(digestContext,
-                         checkDigests + checkIndex * SHA_DIGEST_LENGTH);
-            DIGEST_Init(digestContext);
+                         checkDigests + checkIndex * HASH_DIGEST_LENGTH);
+            if (hashedBlocks < blockCount) {
+                DIGEST_Init(digestContext);
+            }
         }
     }
     PROGRESS_Finish(&progress, blockSize);
     EVP_CIPHER_CTX_free(aes);
 
-    uint8_t writtenShaDigest[SHA_DIGEST_LENGTH];
-    DIGEST_Final(digestContext, writtenShaDigest);
-    DIGEST_Print(writtenShaDigest, "written");
+    uint8_t writtenHashDigest[HASH_DIGEST_LENGTH];
+    DIGEST_Init(rootDigestContext);
+    DIGEST_Update(rootDigestContext, checkDigests,
+                  checkCount * HASH_DIGEST_LENGTH);
+    DIGEST_Final(rootDigestContext, writtenHashDigest);
+    DIGEST_Print(writtenHashDigest, "written");
 
     if (lseek(fd, 0LL, SEEK_SET) != 0LL) {
         perror("lseek() failed");
@@ -321,10 +331,11 @@ int main(int argc, const char *argv[]) {
     }
 
     int exitCode = EXIT_SUCCESS;
-    uint8_t readShaDigest[SHA_DIGEST_LENGTH];
+    uint8_t readHashDigest[HASH_DIGEST_LENGTH];
 
     printf("verifying written data\n");
     DIGEST_Init(digestContext);
+    DIGEST_Init(rootDigestContext);
     PROGRESS_Init(&progress, blockCount, "reading");
     for (uint64_t blockIndex = 0; blockIndex < blockCount;
          blockIndex += bufferBlocks) {
@@ -338,27 +349,33 @@ int main(int argc, const char *argv[]) {
         DIGEST_Update(digestContext, buffer, size);
         PROGRESS_Update(&progress, blockIndex, blockSize);
 
-        if ((blockIndex + bufferBlocks) % checkFrequency == 0) {
+        uint64_t hashedBlocks = blockIndex + bufferBlocks;
+        if (hashedBlocks % checkFrequency == 0 || hashedBlocks >= blockCount) {
             uint64_t checkIndex = blockIndex / checkFrequency;
-            DIGEST_Final(digestContext, readShaDigest);
-            DIGEST_Init(digestContext);
-            if (bcmp(checkDigests + checkIndex * SHA_DIGEST_LENGTH,
-                     readShaDigest, SHA_DIGEST_LENGTH) != 0) {
+            DIGEST_Final(digestContext, readHashDigest);
+            DIGEST_Update(rootDigestContext, readHashDigest,
+                          HASH_DIGEST_LENGTH);
+            if (bcmp(checkDigests + checkIndex * HASH_DIGEST_LENGTH,
+                     readHashDigest, HASH_DIGEST_LENGTH) != 0) {
                 printf("\nFailed intermediate checksum for bytes %" PRIu64
                        "...%" PRIu64 "\n",
                        (blockIndex + bufferBlocks - checkFrequency) * blockSize,
                        blockIndex * blockSize + size);
                 exitCode = EXIT_FAILURE;
             }
+            if (hashedBlocks < blockCount) {
+                DIGEST_Init(digestContext);
+            }
         }
     }
     PROGRESS_Finish(&progress, blockSize);
-    DIGEST_Final(digestContext, readShaDigest);
-    DIGEST_Print(readShaDigest, "read");
+    DIGEST_Final(rootDigestContext, readHashDigest);
+    DIGEST_Print(readHashDigest, "read");
     EVP_MD_CTX_free(digestContext);
+    EVP_MD_CTX_free(rootDigestContext);
 
     if (exitCode == EXIT_SUCCESS &&
-        bcmp(writtenShaDigest, readShaDigest, SHA_DIGEST_LENGTH) == 0) {
+        bcmp(writtenHashDigest, readHashDigest, HASH_DIGEST_LENGTH) == 0) {
         printf("SUCCESS\n");
     } else {
         printf("FAILURE\n");
