@@ -22,6 +22,4 @@ echo "original: $original_size"
 echo "gzippped: $gzipped_size ($(( gzipped_size * 100 / original_size ))%)"
 echo "bzippped: $bzipped_size ($(( bzipped_size * 100 / original_size ))%)"
 
-if (( gzipped_size < original_size || bzipped_size < original_size )); then
-  exit 1
-fi
+(( gzipped_size >= original_size && bzipped_size >= original_size ))
